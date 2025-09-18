@@ -57,11 +57,6 @@ class UserpageModel extends FlutterFlowModel<UserpageWidget> {
       ratingsList[index] = updateFn(ratingsList[index]);
 
   bool webViewOpen = true;
-  
-  // Wallet related state
-  bool walletConnected = false;
-  String recipientAddress = '';
-  String transactionAmount = '';
 
   ///  State fields for stateful widgets in this page.
 

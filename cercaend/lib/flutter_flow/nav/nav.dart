@@ -84,120 +84,190 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
-      errorBuilder: (context, state) {
-        return appStateNotifier.loggedIn ? 
-          FeedpageWidget() : 
-          FeedpageWidget();
-      },
+      navigatorKey: appNavigatorKey,
+      errorBuilder: (context, state) =>
+          appStateNotifier.loggedIn ? NavBarPage() : StartingPageWidget(),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) => FeedpageWidget(),
+          builder: (context, _) =>
+              appStateNotifier.loggedIn ? NavBarPage() : StartingPageWidget(),
         ),
         FFRoute(
-          name: 'homepage',
-          path: '/homepage',
-          requireAuth: true,
-          builder: (context, params) => FeedpageWidget(),
+          name: SignupWidget.routeName,
+          path: SignupWidget.routePath,
+          builder: (context, params) => SignupWidget(),
         ),
         FFRoute(
-          name: 'feedpage',
-          path: '/feedpage',
-          requireAuth: true,
-          builder: (context, params) => FeedpageWidget(),
+          name: ForgotPasswordWidget.routeName,
+          path: ForgotPasswordWidget.routePath,
+          builder: (context, params) => ForgotPasswordWidget(),
         ),
         FFRoute(
-          name: 'searchpage',
-          path: '/searchpage',
-          requireAuth: true,
-          builder: (context, params) => FeedpageWidget(),
+          name: LoginWidget.routeName,
+          path: LoginWidget.routePath,
+          builder: (context, params) => LoginWidget(),
         ),
         FFRoute(
-          name: 'notificationpage',
-          path: '/notificationpage',
-          requireAuth: true,
-          builder: (context, params) => FeedpageWidget(),
+          name: StartingPageWidget.routeName,
+          path: StartingPageWidget.routePath,
+          builder: (context, params) => StartingPageWidget(),
         ),
         FFRoute(
-          name: 'userprofile',
-          path: '/userprofile',
-          requireAuth: true,
-          builder: (context, params) => UserpageWidget(),
+          name: UserSurveyWidget.routeName,
+          path: UserSurveyWidget.routePath,
+          builder: (context, params) => UserSurveyWidget(),
         ),
         FFRoute(
-          name: 'createpost',
-          path: '/createpost',
-          requireAuth: true,
-          builder: (context, params) => FeedpageWidget(),
-        ),
-        FFRoute(
-          name: 'postdetails',
-          path: '/postdetails',
-          requireAuth: true,
-          builder: (context, params) => FeedpageWidget(),
-        ),
-        FFRoute(
-          name: 'editprofile',
-          path: '/editprofile',
-          requireAuth: true,
-          builder: (context, params) => UserpageWidget(),
-        ),
-        FFRoute(
-          name: 'settings',
-          path: '/settings',
-          requireAuth: true,
-          builder: (context, params) => UserpageWidget(),
-        ),
-        FFRoute(
-          name: 'walletpage',
-          path: '/walletpage',
-          requireAuth: true,
-          builder: (context, params) => WalletpageWidget(),
-        ),
-        FFRoute(
-          name: 'atlasTest',
-          path: '/atlasTest',
-          requireAuth: true,
-          builder: (context, params) => AtlasTestWidget(),
-        ),
-        FFRoute(
-          name: 'wallet',
-          path: '/wallet',
-          requireAuth: true,
-          builder: (context, params) => WalletWidget(),
-        ),
-        FFRoute(
-          name: 'Publicpage',
-          path: '/publicpage',
-          requireAuth: true,
-          builder: (context, params) => PublicpageWidget(),
-        ),
-        FFRoute(
-          name: 'UserProfile',
-          path: '/userProfile',
-          requireAuth: true,
+          name: UserProfileWidget.routeName,
+          path: UserProfileWidget.routePath,
           builder: (context, params) => UserProfileWidget(),
         ),
         FFRoute(
-          name: 'Verification',
-          path: '/verification',
-          requireAuth: true,
-          builder: (context, params) => VerificationWidget(),
+          name: UserpageWidget.routeName,
+          path: UserpageWidget.routePath,
+          builder: (context, params) => params.isEmpty
+              ? NavBarPage(initialPage: 'Userpage')
+              : UserpageWidget(),
         ),
         FFRoute(
-          name: 'Parameters',
-          path: '/parameters',
-          requireAuth: true,
+          name: ParametersWidget.routeName,
+          path: ParametersWidget.routePath,
           builder: (context, params) => ParametersWidget(),
         ),
         FFRoute(
-          name: 'StartingPage',
-          path: '/startingPage',
-          requireAuth: false,
-          builder: (context, params) => StartingPageWidget(),
+            name: NewpageWidget.routeName,
+            path: NewpageWidget.routePath,
+            requireAuth: true,
+            builder: (context, params) => params.isEmpty
+                ? NavBarPage(initialPage: 'Newpage')
+                : NavBarPage(
+                    initialPage: 'Newpage',
+                    page: NewpageWidget(),
+                  )),
+        FFRoute(
+          name: FeedpageWidget.routeName,
+          path: FeedpageWidget.routePath,
+          builder: (context, params) => params.isEmpty
+              ? NavBarPage(initialPage: 'Feedpage')
+              : FeedpageWidget(),
+        ),
+        FFRoute(
+          name: NewCatalogueWidget.routeName,
+          path: NewCatalogueWidget.routePath,
+          builder: (context, params) => NewCatalogueWidget(),
+        ),
+        FFRoute(
+          name: MethodWalletWidget.routeName,
+          path: MethodWalletWidget.routePath,
+          builder: (context, params) => MethodWalletWidget(),
+        ),
+        FFRoute(
+          name: PublicpageWidget.routeName,
+          path: PublicpageWidget.routePath,
+          builder: (context, params) => PublicpageWidget(
+            profileparameter: params.getParam(
+              'profileparameter',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['users'],
+            ),
+            objectparameter: params.getParam(
+              'objectparameter',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['submission'],
+            ),
+            objectrefvalue: params.getParam(
+              'objectrefvalue',
+              ParamType.double,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: PinnedUsersWidget.routeName,
+          path: PinnedUsersWidget.routePath,
+          builder: (context, params) => PinnedUsersWidget(),
+        ),
+        FFRoute(
+          name: OrderpageWidget.routeName,
+          path: OrderpageWidget.routePath,
+          asyncParams: {
+            'orderparameter': getDoc(['order'], OrderRecord.fromSnapshot),
+          },
+          builder: (context, params) => OrderpageWidget(
+            ordertaker: params.getParam(
+              'ordertaker',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['users'],
+            ),
+            orderparameter: params.getParam(
+              'orderparameter',
+              ParamType.Document,
+            ),
+            ordermaker: params.getParam(
+              'ordermaker',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['users'],
+            ),
+          ),
+        ),
+        FFRoute(
+          name: MethodOrderWidget.routeName,
+          path: MethodOrderWidget.routePath,
+          builder: (context, params) => MethodOrderWidget(),
+        ),
+        FFRoute(
+          name: AboutWidget.routeName,
+          path: AboutWidget.routePath,
+          builder: (context, params) => AboutWidget(),
+        ),
+        FFRoute(
+          name: SystemWidget.routeName,
+          path: SystemWidget.routePath,
+          builder: (context, params) => SystemWidget(),
+        ),
+        FFRoute(
+          name: PinnedObjectsWidget.routeName,
+          path: PinnedObjectsWidget.routePath,
+          builder: (context, params) => PinnedObjectsWidget(),
+        ),
+        FFRoute(
+          name: HashingpageWidget.routeName,
+          path: HashingpageWidget.routePath,
+          builder: (context, params) => HashingpageWidget(),
+        ),
+        FFRoute(
+          name: VerificationWidget.routeName,
+          path: VerificationWidget.routePath,
+          builder: (context, params) => VerificationWidget(),
+        ),
+        FFRoute(
+          name: UserratingWidget.routeName,
+          path: UserratingWidget.routePath,
+          builder: (context, params) => UserratingWidget(
+            publicuser: params.getParam(
+              'publicuser',
+              ParamType.DocumentReference,
+              isList: false,
+              collectionNamePath: ['users'],
+            ),
+            userismaker: params.getParam(
+              'userismaker',
+              ParamType.bool,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: MAIN001CopyWidget.routeName,
+          path: MAIN001CopyWidget.routePath,
+          builder: (context, params) => MAIN001CopyWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
+      observers: [routeObserver],
     );
 
 extension NavParamExtensions on Map<String, String?> {

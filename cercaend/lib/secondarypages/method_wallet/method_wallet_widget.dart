@@ -14,11 +14,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'method_wallet_model.dart';
-
-// Import the Atlas API service
-import '../../backend/api_requests/atlas_api_service.dart';
-import 'dart:convert'; // Add this import for JSON decoding
-
 export 'method_wallet_model.dart';
 
 class MethodWalletWidget extends StatefulWidget {
@@ -35,12 +30,6 @@ class _MethodWalletWidgetState extends State<MethodWalletWidget> {
   late MethodWalletModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  
-  // Wallet state variables
-  String? _walletAddress;
-  String? _sessionToken;
-  int _balance = 0;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -64,91 +53,6 @@ class _MethodWalletWidgetState extends State<MethodWalletWidget> {
     _model.dispose();
 
     super.dispose();
-  }
-  
-  // Function to create a new wallet
-  Future<void> _createWallet() async {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      final response = await AtlasApiService.connectWallet(action: 'create');
-      
-      if (response.succeeded) {
-        final data = json.decode(response.bodyText);
-        if (data['success'] == true) {
-          setState(() {
-            _walletAddress = data['data']['address'];
-            _sessionToken = data['data']['sessionToken'];
-            _balance = data['data']['balance'] as int? ?? 0;
-            _isLoading = false;
-          });
-          
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Wallet created successfully')),
-          );
-        } else {
-          throw Exception(data['message'] ?? 'Failed to create wallet');
-        }
-      } else {
-        throw Exception('API call failed with status: ${response.statusCode}');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating wallet: ${e.toString()}')),
-      );
-    }
-  }
-  
-  // Function to get wallet info
-  Future<void> _getWalletInfo() async {
-    if (_walletAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No wallet connected')),
-      );
-      return;
-    }
-    
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      final response = await AtlasApiService.getWalletInfo(address: _walletAddress!);
-      
-      if (response.succeeded) {
-        final data = json.decode(response.bodyText);
-        if (data['success'] == true) {
-          setState(() {
-            _balance = data['data']['balance'] as int? ?? 0;
-            _isLoading = false;
-          });
-          
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Wallet info updated')),
-          );
-        } else {
-          throw Exception(data['message'] ?? 'Failed to get wallet info');
-        }
-      } else {
-        throw Exception('API call failed with status: ${response.statusCode}');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting wallet info: ${e.toString()}')),
-      );
-    }
   }
 
   @override
@@ -194,103 +98,6 @@ class _MethodWalletWidgetState extends State<MethodWalletWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              // Wallet info section
-              if (_walletAddress != null) ...[
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: FlutterFlowTheme.of(context).primaryBackground,
-                      borderRadius: BorderRadius.circular(12.0),
-                      border: Border.all(
-                        color: FlutterFlowTheme.of(context).primary,
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Connected Wallet',
-                            style: FlutterFlowTheme.of(context).titleMedium,
-                          ),
-                          SizedBox(height: 8.0),
-                          Text(
-                            'Address: ${_walletAddress?.substring(0, 16)}...',
-                            style: FlutterFlowTheme.of(context).bodyMedium,
-                          ),
-                          SizedBox(height: 8.0),
-                          Text(
-                            'Balance: $_balance tokens',
-                            style: FlutterFlowTheme.of(context).bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-              
-              // Action buttons
-              Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    FFButtonWidget(
-                      onPressed: _isLoading ? null : _createWallet,
-                      text: 'Create Wallet',
-                      options: FFButtonOptions(
-                        width: 130.0,
-                        height: 40.0,
-                        color: FlutterFlowTheme.of(context).primary,
-                        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                              fontFamily: FlutterFlowTheme.of(context).titleSmallFamily,
-                              color: Colors.white,
-                              useGoogleFonts: false,
-                            ),
-                        elevation: 2.0,
-                        borderSide: BorderSide(
-                          color: Colors.transparent,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                    FFButtonWidget(
-                      onPressed: _walletAddress == null ? null : (_isLoading ? null : _getWalletInfo),
-                      text: 'Refresh Info',
-                      options: FFButtonOptions(
-                        width: 130.0,
-                        height: 40.0,
-                        color: FlutterFlowTheme.of(context).secondary,
-                        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                              fontFamily: FlutterFlowTheme.of(context).titleSmallFamily,
-                              color: Colors.white,
-                              useGoogleFonts: false,
-                            ),
-                        elevation: 2.0,
-                        borderSide: BorderSide(
-                          color: Colors.transparent,
-                          width: 1.0,
-                        ),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Loading indicator
-              if (_isLoading) ...[
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(),
-                ),
-              ],
-              
               Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Container(
@@ -966,10 +773,9 @@ class _MethodWalletWidgetState extends State<MethodWalletWidget> {
                                         fontWeight: FlutterFlowTheme.of(context)
                                             .bodyMedium
                                             .fontWeight,
-                                        fontStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium
-                                                  .fontStyle,
+                                        fontStyle: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .fontStyle,
                                       ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(

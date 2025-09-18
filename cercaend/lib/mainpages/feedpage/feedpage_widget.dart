@@ -1,4 +1,3 @@
-import '/components/status_display_widget.dart';
 import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/components/object/object_widget.dart';
@@ -151,7 +150,6 @@ class _FeedpageWidgetState extends State<FeedpageWidget>
               Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  StatusDisplayWidget(),
                   if (FFAppState().showfullfeed == true)
                     Expanded(
                       child: Align(

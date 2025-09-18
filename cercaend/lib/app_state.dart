@@ -39,12 +39,6 @@ class FFAppState extends ChangeNotifier {
     _isAssistantExpanded = value;
   }
 
-  bool _isWalletConnected = false;
-  bool get isWalletConnected => _isWalletConnected;
-  set isWalletConnected(bool value) {
-    _isWalletConnected = value;
-  }
-
   String _recorded = '';
   String get recorded => _recorded;
   set recorded(String value) {
@@ -166,6 +160,12 @@ class FFAppState extends ChangeNotifier {
   bool get showfullfeed => _showfullfeed;
   set showfullfeed(bool value) {
     _showfullfeed = value;
+  }
+
+  bool _isWalletConnected = false;
+  bool get isWalletConnected => _isWalletConnected;
+  set isWalletConnected(bool value) {
+    _isWalletConnected = value;
   }
 
   String _walletAddress = '';

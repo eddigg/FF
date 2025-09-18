@@ -3,14 +3,12 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import 'dart:ui';
+import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'walletconnect_t_e_s_t_model.dart';
-
-// Import the Atlas API service
-import '../../backend/api_requests/atlas_api_service.dart';
-import 'dart:convert'; // Add this import for JSON decoding
-
 export 'walletconnect_t_e_s_t_model.dart';
 
 class WalletconnectTESTWidget extends StatefulWidget {
@@ -24,323 +22,184 @@ class WalletconnectTESTWidget extends StatefulWidget {
 class _WalletconnectTESTWidgetState extends State<WalletconnectTESTWidget> {
   late WalletconnectTESTModel _model;
 
-  // Wallet state variables
-  String? _walletAddress;
-  String? _sessionToken;
-  int _balance = 0;
-  bool _isLoading = false;
-  List<dynamic> _transactions = [];
-
   @override
   void setState(VoidCallback callback) {
     super.setState(callback);
+    _model.onUpdate();
   }
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => WalletconnectTESTModel());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
 
   @override
   void dispose() {
-    _model.dispose();
-    super.dispose();
-  }
+    _model.maybeDispose();
 
-  // Function to create a new wallet
-  Future<void> _createWallet() async {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      // Simulate API call with delay
-      await Future.delayed(Duration(seconds: 2));
-      
-      // Mock successful response
-      setState(() {
-        _walletAddress = '0x${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}';
-        _sessionToken = 'token_${DateTime.now().millisecondsSinceEpoch}';
-        _balance = 100;
-        _isLoading = false;
-      });
-      
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Wallet created successfully')),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating wallet: ${e.toString()}')),
-      );
-    }
-  }
-  
-  // Function to get wallet info
-  Future<void> _getWalletInfo() async {
-    if (_walletAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No wallet connected')),
-      );
-      return;
-    }
-    
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      // Simulate API call with delay
-      await Future.delayed(Duration(seconds: 1));
-      
-      // Mock successful response with updated balance
-      setState(() {
-        _balance = _balance + 50; // Add 50 tokens as an example
-        _isLoading = false;
-      });
-      
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Wallet balance updated')),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting wallet info: ${e.toString()}')),
-      );
-    }
-  }
-  
-  // Function to get transaction history
-  Future<void> _getTransactionHistory() async {
-    if (_walletAddress == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No wallet connected')),
-      );
-      return;
-    }
-    
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      // Simulate API call with delay
-      await Future.delayed(Duration(seconds: 1));
-      
-      // Mock transaction history
-      setState(() {
-        _transactions = [
-          {
-            'amount': 25,
-            'type': 'sent',
-            'recipient': '0xRecipient123',
-            'timestamp': '2023-07-15'
-          },
-          {
-            'amount': 50,
-            'type': 'received',
-            'sender': '0xSender456',
-            'timestamp': '2023-07-14'
-          },
-          {
-            'amount': 25,
-            'type': 'sent',
-            'recipient': '0xRecipient789',
-            'timestamp': '2023-07-13'
-          },
-        ];
-        _isLoading = false;
-      });
-      
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Transaction history loaded')),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error getting transaction history: ${e.toString()}')),
-      );
-    }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-      ),
+    return Align(
+      alignment: AlignmentDirectional(0.0, 0.0),
       child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Wallet Connection Demo',
-              style: FlutterFlowTheme.of(context).headlineMedium,
+        padding: EdgeInsets.all(4.0),
+        child: StreamBuilder<List<CreditsRecord>>(
+          stream: queryCreditsRecord(
+            queryBuilder: (creditsRecord) => creditsRecord.where(
+              'userRef',
+              isEqualTo: currentUserReference,
             ),
-            SizedBox(height: 16.0),
-            
-            // Wallet info display
-            if (_walletAddress != null) ...[
-              Container(
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).primaryBackground,
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(
-                    color: FlutterFlowTheme.of(context).primary,
-                    width: 1.0,
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Connected Wallet',
-                        style: FlutterFlowTheme.of(context).titleMedium,
-                      ),
-                      SizedBox(height: 8.0),
-                      Text(
-                        'Address: ${_walletAddress?.substring(0, 20)}...',
-                        style: FlutterFlowTheme.of(context).bodyMedium,
-                      ),
-                      SizedBox(height: 8.0),
-                      Text(
-                        'Balance: $_balance tokens',
-                        style: FlutterFlowTheme.of(context).bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.0),
-            ],
-            
-            // Action buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                FFButtonWidget(
-                  onPressed: _isLoading ? null : _createWallet,
-                  text: 'Create Wallet',
-                  options: FFButtonOptions(
-                    width: 130.0,
-                    height: 40.0,
-                    color: FlutterFlowTheme.of(context).primary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          fontFamily: FlutterFlowTheme.of(context).titleSmallFamily,
-                          color: Colors.white,
-                          useGoogleFonts: false,
-                        ),
-                    elevation: 2.0,
-                    borderSide: BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
+            singleRecord: true,
+          ),
+          builder: (context, snapshot) {
+            // Customize what your widget looks like when it's loading.
+            if (!snapshot.hasData) {
+              return Center(
+                child: SizedBox(
+                  width: 50.0,
+                  height: 50.0,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      FlutterFlowTheme.of(context).primary,
                     ),
-                    borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                FFButtonWidget(
-                  onPressed: _walletAddress == null ? null : (_isLoading ? null : _getWalletInfo),
-                  text: 'Refresh Info',
-                  options: FFButtonOptions(
-                    width: 130.0,
-                    height: 40.0,
-                    color: FlutterFlowTheme.of(context).secondary,
-                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                          fontFamily: FlutterFlowTheme.of(context).titleSmallFamily,
-                          color: Colors.white,
-                          useGoogleFonts: false,
-                        ),
-                    elevation: 2.0,
-                    borderSide: BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
+              );
+            }
+            List<CreditsRecord> creditCardCreditsRecordList = snapshot.data!;
+            // Return an empty Container when the item does not exist.
+            if (snapshot.data!.isEmpty) {
+              return Container();
+            }
+            final creditCardCreditsRecord =
+                creditCardCreditsRecordList.isNotEmpty
+                    ? creditCardCreditsRecordList.first
+                    : null;
+
+            return Container(
+              width: 320.0,
+              height: 360.0,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 6.0,
+                    color: Color(0x4B1A1F24),
+                    offset: Offset(
+                      0.0,
+                      2.0,
                     ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            
-            FFButtonWidget(
-              onPressed: _walletAddress == null ? null : (_isLoading ? null : _getTransactionHistory),
-              text: 'Load Transactions',
-              options: FFButtonOptions(
-                width: double.infinity,
-                height: 40.0,
-                color: FlutterFlowTheme.of(context).tertiary,
-                textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                      fontFamily: FlutterFlowTheme.of(context).titleSmallFamily,
-                      color: Colors.white,
-                      useGoogleFonts: false,
-                    ),
-                elevation: 2.0,
-                borderSide: BorderSide(
-                  color: Colors.transparent,
-                  width: 1.0,
+                  )
+                ],
+                gradient: LinearGradient(
+                  colors: [
+                    FlutterFlowTheme.of(context).secondary,
+                    FlutterFlowTheme.of(context).secondaryText
+                  ],
+                  stops: [0.0, 1.0],
+                  begin: AlignmentDirectional(0.94, -1.0),
+                  end: AlignmentDirectional(-0.94, 1.0),
                 ),
                 borderRadius: BorderRadius.circular(8.0),
               ),
-            ),
-            SizedBox(height: 16.0),
-            
-            // Transaction history
-            if (_transactions.isNotEmpty) ...[
-              Text(
-                'Recent Transactions',
-                style: FlutterFlowTheme.of(context).titleMedium,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                            color: FlutterFlowTheme.of(context)
+                                .secondaryBackground,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ].divide(SizedBox(width: 12.0)),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        BarcodeWidget(
+                          data: 'https://flutterflow.io/',
+                          barcode: Barcode.qrCode(),
+                          width: 200.0,
+                          height: 200.0,
+                          color: FlutterFlowTheme.of(context).alternate,
+                          backgroundColor: Colors.transparent,
+                          errorBuilder: (_context, _error) => SizedBox(
+                            width: 200.0,
+                            height: 200.0,
+                          ),
+                          drawText: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 12.0),
+                    child: FFButtonWidget(
+                      onPressed: () {
+                        print('Button pressed ...');
+                      },
+                      text: FFLocalizations.of(context).getText(
+                        '9d2kvxka' /* Connect to wallet */,
+                      ),
+                      icon: Icon(
+                        Icons.upload_rounded,
+                        size: 15.0,
+                      ),
+                      options: FFButtonOptions(
+                        height: 40.0,
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                            20.0, 0.0, 20.0, 0.0),
+                        iconPadding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        iconColor: FlutterFlowTheme.of(context).secondaryText,
+                        color: FlutterFlowTheme.of(context).alternate,
+                        textStyle: FlutterFlowTheme.of(context)
+                            .titleSmall
+                            .override(
+                              font: GoogleFonts.inter(
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FlutterFlowTheme.of(context)
+                                    .titleSmall
+                                    .fontStyle,
+                              ),
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                              fontSize: 16.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                              fontStyle: FlutterFlowTheme.of(context)
+                                  .titleSmall
+                                  .fontStyle,
+                            ),
+                        elevation: 2.0,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      showLoadingIndicator: false,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 8.0),
-              Container(
-                height: 200.0,
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).primaryBackground,
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: ListView.builder(
-                  itemCount: _transactions.length,
-                  itemBuilder: (context, index) {
-                    final tx = _transactions[index];
-                    return ListTile(
-                      title: Text('${tx['amount']} tokens'),
-                      subtitle: Text(tx['type'] == 'sent' 
-                          ? 'To: ${tx['recipient'].toString().substring(0, 10)}...' 
-                          : 'From: ${tx['sender'].toString().substring(0, 10)}...'),
-                      trailing: Text(tx['timestamp'].toString()),
-                    );
-                  },
-                ),
-              ),
-            ],
-            
-            // Loading indicator
-            if (_isLoading) ...[
-              Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-            ],
-          ],
+            );
+          },
         ),
       ),
     );
