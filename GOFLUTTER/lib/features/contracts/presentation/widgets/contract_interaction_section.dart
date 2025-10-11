@@ -1,255 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/contracts_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
-import '../../../../shared/widgets/custom_widgets.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
-class ContractInteractionSection extends StatefulWidget {
-  const ContractInteractionSection({Key? key}) : super(key: key);
-
-  @override
-  State<ContractInteractionSection> createState() => _ContractInteractionSectionState();
-}
-
-class _ContractInteractionSectionState extends State<ContractInteractionSection> {
-  final _contractAddressController = TextEditingController();
-  final _callerAddressController = TextEditingController();
-  final _gasLimitController = TextEditingController(text: '1000');
-  final Map<String, List<TextEditingController>> _functionParamControllers = {};
-
-  @override
-  void dispose() {
-    _contractAddressController.dispose();
-    _callerAddressController.dispose();
-    _gasLimitController.dispose();
-    // Dispose all function parameter controllers
-    _functionParamControllers.values.expand((list) => list).forEach((controller) => controller.dispose());
-    super.dispose();
-  }
-
-  void _loadContractInfo() {
-    if (_contractAddressController.text.isNotEmpty) {
-      context.read<ContractsBloc>().add(LoadContractInfo(address: _contractAddressController.text));
-    }
-  }
-
-  void _callFunction(String functionName, List<String> paramNames) {
-    final args = <dynamic>[];
-    if (_functionParamControllers.containsKey(functionName)) {
-      for (int i = 0; i < _functionParamControllers[functionName]!.length; i++) {
-        final value = _functionParamControllers[functionName]![i].text;
-        // Try to parse as number, otherwise keep as string
-        final numValue = num.tryParse(value);
-        args.add(numValue ?? value);
-      }
-    }
-
-    context.read<ContractsBloc>().add(CallContractFunction(
-      address: _contractAddressController.text,
-      functionName: functionName,
-      args: args,
-      caller: _callerAddressController.text,
-      gasLimit: int.tryParse(_gasLimitController.text) ?? 1000,
-    ));
-  }
+class ContractInteractionSection extends StatelessWidget {
+  const ContractInteractionSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return EnhancedGlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Contract Interaction', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _contractAddressController,
-              style: AppTextStyles.body1,
-              decoration: InputDecoration(
-                labelText: 'Contract Address',
-                labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                ),
-                filled: true,
-                fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            GradientButton(
-              text: 'Load Contract Info',
-              onPressed: _loadContractInfo,
-              gradient: AppColors.secondaryGradient,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            TextField(
-              controller: _callerAddressController,
-              style: AppTextStyles.body1,
-              decoration: InputDecoration(
-                labelText: 'Caller Address',
-                labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                ),
-                filled: true,
-                fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            TextField(
-              controller: _gasLimitController,
-              keyboardType: TextInputType.number,
-              style: AppTextStyles.body1,
-              decoration: InputDecoration(
-                labelText: 'Gas Limit',
-                labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                ),
-                filled: true,
-                fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<ContractsBloc, ContractsState>(
-              builder: (context, state) {
-                if (state is ContractsLoaded && state.selectedContract != null) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Available Functions:', style: AppTextStyles.h5),
-                      const SizedBox(height: AppSpacing.sm),
-                      ...state.selectedContract!.functions.map<Widget>((func) {
-                        // Create controllers for function parameters if they don't exist
-                        if (!_functionParamControllers.containsKey(func['name'])) {
-                          _functionParamControllers[func['name']] = [];
-                        }
-                        
-                        final paramNames = List<String>.from(func['params'] ?? []);
-                        // Ensure we have the right number of controllers
-                        while (_functionParamControllers[func['name']]!.length < paramNames.length) {
-                          _functionParamControllers[func['name']]!.add(TextEditingController());
-                        }
-                        while (_functionParamControllers[func['name']]!.length > paramNames.length) {
-                          _functionParamControllers[func['name']]!.removeLast().dispose();
-                        }
-                        
-                        return _buildFunctionCard(func['name'], paramNames, func['name']);
-                      }).toList(),
-                    ],
-                  );
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
-            ),
-          ],
-        ),
+    // Controllers would be in a StatefulWidget
+    final addressController = TextEditingController();
+    final callerController = TextEditingController();
+    final gasController = TextEditingController(text: '1000');
+
+    return glass_card.GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _PanelTitle(title: '⚡ Contract Interaction'),
+          _buildTextField(label: 'Contract Address:', controller: addressController),
+          ElevatedButton(
+            onPressed: () {
+              // For stub implementation, we just show a snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Loading contract info...')),
+              );
+            }, 
+            style: WebParityTheme.secondaryButtonStyle, 
+            child: const Text('Load Contract Info')
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(label: 'Caller Address:', controller: callerController),
+          _buildTextField(label: 'Gas Limit:', controller: gasController, isNumeric: true),
+          const SizedBox(height: 16),
+          const Text('Available Functions:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          // TODO: Dynamically build function call widgets based on loaded contract info
+        ],
       ),
     );
   }
 
-  Widget _buildFunctionCard(String functionName, List<String> paramNames, String functionKey) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: EnhancedGlassCard(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(functionName, style: AppTextStyles.h5),
-              if (paramNames.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text('Parameters: ${paramNames.join(', ')}', style: AppTextStyles.body2),
-                const SizedBox(height: AppSpacing.sm),
-                ...List.generate(paramNames.length, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: TextField(
-                      controller: _functionParamControllers[functionKey]![index],
-                      style: AppTextStyles.body1,
-                      decoration: InputDecoration(
-                        labelText: paramNames[index],
-                        labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                          borderSide: const BorderSide(color: AppColors.border, width: 2),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                          borderSide: const BorderSide(color: AppColors.border, width: 2),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: AppColors.surface,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                      ),
-                    ),
-                  );
-                }),
-              ],
-              const SizedBox(height: AppSpacing.sm),
-              Row(
-                children: [
-                  GradientButton(
-                    text: 'Call Function',
-                    onPressed: () => _callFunction(functionName, paramNames),
-                    gradient: AppColors.successGradient,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: AppColors.info.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                    ),
-                    child: Text(
-                      'Gas Limit: ${_gasLimitController.text}',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.info),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+  Widget _buildTextField({required String label, required TextEditingController controller, bool isNumeric = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+            decoration: WebParityTheme.inputDecoration(''),
           ),
-        ),
+        ],
       ),
+    );
+  }
+}
+
+class _PanelTitle extends StatelessWidget {
+  final String title;
+  const _PanelTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Text(title, style: WebParityTheme.panelTitleStyle),
     );
   }
 }

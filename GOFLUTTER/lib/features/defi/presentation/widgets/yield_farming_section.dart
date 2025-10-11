@@ -1,124 +1,135 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/defi_bloc.dart';
-import '../../data/models/yield_farm_model.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart'; // Use stub BLoC instead
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class YieldFarmingSection extends StatelessWidget {
-  const YieldFarmingSection({Key? key}) : super(key: key);
+  const YieldFarmingSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Yield Farming', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<DeFiBloc, DeFiState>(
-              builder: (context, state) {
-                if (state is DeFiLoaded) {
-                  return Column(
-                    children: state.yieldFarms.map((farm) => _buildFarmCard(context, farm)).toList(),
-                  );
-                } else if (state is DeFiLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  return const Center(child: Text('Error loading yield farms'));
-                }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('🌾 Yield Farming', style: WebParityTheme.panelTitleStyle),
+        const SizedBox(height: 20),
+        BlocBuilder<DeFiBloc, DeFiState>(
+          builder: (context, state) {
+            // Since we're using stub BLoC, we'll show mock data
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: _mockYieldFarms.length,
+              itemBuilder: (context, index) {
+                final farm = _mockYieldFarms[index];
+                return _YieldFarmCard(farm: farm);
               },
-            ),
-          ],
+            );
+          },
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildFarmCard(BuildContext context, YieldFarmModel farm) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: AppColors.border),
-      ),
+  static final List<Map<String, dynamic>> _mockYieldFarms = [
+    {
+      'name': 'ATLAS/USDC LP',
+      'apy': 25.5,
+      'reward': 'ATLAS',
+      'tvl': 1500000,
+    },
+    {
+      'name': 'ETH/USDC LP',
+      'apy': 18.2,
+      'reward': 'ATLAS',
+      'tvl': 2200000,
+    },
+    {
+      'name': 'BTC/USDC LP',
+      'apy': 12.8,
+      'reward': 'ATLAS',
+      'tvl': 3800000,
+    },
+    {
+      'name': 'ATLAS/ETH LP',
+      'apy': 32.3,
+      'reward': 'ATLAS',
+      'tvl': 950000,
+    },
+  ];
+}
+
+class _YieldFarmCard extends StatelessWidget {
+  final Map<String, dynamic> farm;
+
+  const _YieldFarmCard({required this.farm});
+
+  @override
+  Widget build(BuildContext context) {
+    return glass_card.GlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Farm header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                farm.name,
-                style: AppTextStyles.h5,
-              ),
+              Text(farm['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  color: const Color(0xFF48BB78).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(
-                  '${farm.apy}% APY',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: Text('${farm['apy']}% APY', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF48BB78))),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          // Farm stats grid
+          const SizedBox(height: 15),
           GridView.count(
             crossAxisCount: 2,
-            crossAxisSpacing: AppSpacing.sm,
-            mainAxisSpacing: AppSpacing.sm,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              _buildFarmStat('Reward Token', farm.reward),
-              _buildFarmStat('TVL', '\$${(farm.tvl / 1000000).toStringAsFixed(1)}M'),
+              _FarmStat(label: 'Reward Token', value: farm['reward'] as String),
+              _FarmStat(label: 'TVL', value: '\$${((farm['tvl'] as int) / 1000000).toStringAsFixed(1)}M'),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          GradientButton(
-            text: 'Stake in Farm',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Staked in farm successfully!')),
-              );
-            },
-          ),
+          const SizedBox(height: 15),
+          SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () {}, style: WebParityTheme.primaryButtonStyle, child: const Text('Stake in Farm'))),
         ],
       ),
     );
   }
+}
 
-  Widget _buildFarmStat(String label, String value) {
+class _FarmStat extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _FarmStat({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.border),
+        color: const Color(0xFFF8FAFC).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            value,
-            style: AppTextStyles.body2.copyWith(fontWeight: FontWeight.bold),
-          ),
-          Text(
-            label,
-            style: AppTextStyles.caption,
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+          Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
         ],
       ),
     );

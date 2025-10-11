@@ -18,7 +18,7 @@ class HealthPage extends StatelessWidget {
     return WebScaffold(
       title: 'Health Dashboard',
       showBackButton: true,
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(WebParityTheme.containerPadding),
           child: Column(

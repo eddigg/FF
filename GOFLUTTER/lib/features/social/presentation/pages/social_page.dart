@@ -29,19 +29,36 @@ class _SocialPageState extends State<SocialPage> {
     return WebScaffold(
       title: 'ATLAS Social Platform',
       showBackButton: true,
-      child: Row(
+      body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SocialSidebar(
-            selectedSection: _selectedSection,
-            onSectionSelected: _onSectionSelected,
+          SizedBox(
+            width: 250,
+            child: SocialSidebar(
+              selectedSection: _selectedSection,
+              onSectionSelected: _onSectionSelected,
+            ),
           ),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(WebParityTheme.containerPadding),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(
+                      'ATLAS Social Platform',
+                      style: WebParityTheme.panelTitleStyle,
+                    ),
+                    const SizedBox(height: WebParityTheme.spacingLg),
+                    const Text(
+                      'Connect with the ATLAS community, share ideas, and collaborate on blockchain projects.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: WebParityTheme.spacingLg * 2),
                     if (_selectedSection == 'feed') const SocialFeed(),
                     if (_selectedSection == 'create') const CreatePostSection(),
                     if (_selectedSection == 'trending') const TrendingTopicsSection(),
@@ -51,7 +68,11 @@ class _SocialPageState extends State<SocialPage> {
               ),
             ),
           ),
-          const SocialRightSidebar(),
+          const SizedBox(width: WebParityTheme.spacingMd),
+          const SizedBox(
+            width: 250,
+            child: SocialRightSidebar(),
+          ),
         ],
       ),
     );

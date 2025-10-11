@@ -1,218 +1,240 @@
 import 'package:flutter/material.dart';
-import '../../data/models/privacy_settings_model.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import '../../../../shared/themes/web_parity_theme.dart';
 
-class PrivacySection extends StatefulWidget {
-  final PrivacySettingsModel privacySettings;
+const ButtonStyle fallbackSecondaryButtonStyle = ButtonStyle(
+  backgroundColor: WidgetStatePropertyAll(Color(0xFF4A5568)),
+  foregroundColor: WidgetStatePropertyAll(Colors.white),
+  padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+);
 
-  const PrivacySection({Key? key, required this.privacySettings}) : super(key: key);
+const ButtonStyle fallbackWarningButtonStyle = ButtonStyle(
+  backgroundColor: WidgetStatePropertyAll(Color(0xFFED8936)),
+  foregroundColor: WidgetStatePropertyAll(Colors.white),
+  padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+);
 
-  @override
-  State<PrivacySection> createState() => _PrivacySectionState();
-}
+const ButtonStyle fallbackDangerButtonStyle = ButtonStyle(
+  backgroundColor: WidgetStatePropertyAll(Color(0xFFF56565)),
+  foregroundColor: WidgetStatePropertyAll(Colors.white),
+  padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+);
 
-class _PrivacySectionState extends State<PrivacySection> {
-  late Map<String, bool> _privacySettings;
-
-  @override
-  void initState() {
-    super.initState();
-    _privacySettings = {
-      'profileVisibility': widget.privacySettings.profileVisibility,
-      'activityVisibility': widget.privacySettings.activityVisibility,
-      'allowDirectMessages': widget.privacySettings.allowDirectMessages,
-      'showOnlineStatus': widget.privacySettings.showOnlineStatus,
-      'dataSharing': widget.privacySettings.dataSharing,
-      'analyticsTracking': widget.privacySettings.analyticsTracking,
-      'marketingEmails': widget.privacySettings.marketingEmails,
-      'thirdPartySharing': widget.privacySettings.thirdPartySharing,
-    };
-  }
-
-  void _togglePrivacy(String setting) {
-    setState(() {
-      _privacySettings[setting] = !_privacySettings[setting]!;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Privacy setting updated!')),
-    );
-  }
-
-  void _exportData() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data export initiated!')),
-    );
-  }
-
-  void _anonymizeData() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Data anonymization initiated!')),
-    );
-  }
-
-  void _deleteAccount() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Delete Account'),
-          content: const Text('Are you sure you want to delete your account? This action cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            GradientButton(
-              text: 'Delete',
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Account deletion initiated!')),
-                );
-              },
-              gradient: const LinearGradient(colors: [AppColors.error, AppColors.error]),
-            ),
-          ],
-        );
-      },
-    );
-  }
+class PrivacySection extends StatelessWidget {
+  const PrivacySection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final privacyOptions = [
-      {
-        'key': 'profileVisibility',
-        'title': 'Public Profile',
-        'description': 'Allow others to view your profile',
-      },
-      {
-        'key': 'activityVisibility',
-        'title': 'Activity Visibility',
-        'description': 'Show your activity to others',
-      },
-      {
-        'key': 'allowDirectMessages',
-        'title': 'Direct Messages',
-        'description': 'Allow others to send you messages',
-      },
-      {
-        'key': 'showOnlineStatus',
-        'title': 'Online Status',
-        'description': 'Show when you are online',
-      },
-      {
-        'key': 'dataSharing',
-        'title': 'Data Sharing',
-        'description': 'Share data with ATLAS partners',
-      },
-      {
-        'key': 'analyticsTracking',
-        'title': 'Analytics Tracking',
-        'description': 'Allow analytics and usage tracking',
-      },
-      {
-        'key': 'marketingEmails',
-        'title': 'Marketing Emails',
-        'description': 'Receive marketing communications',
-      },
-      {
-        'key': 'thirdPartySharing',
-        'title': 'Third-party Sharing',
-        'description': 'Share data with third parties',
-      },
-    ];
+    // Mock privacy settings data
+    final mockPrivacySettings = {
+      'profileVisibility': true,
+      'activityVisibility': true,
+      'allowDirectMessages': true,
+      'showOnlineStatus': false,
+      'dataSharing': false,
+      'analyticsTracking': true,
+      'marketingEmails': false,
+      'thirdPartySharing': false,
+    };
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GlassCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('🔒 Privacy Controls', style: AppTextStyles.h4),
-                const SizedBox(height: AppSpacing.md),
-                ...privacyOptions.map((option) {
-                  final key = option['key'] as String;
-                  final isEnabled = _privacySettings[key] ?? false;
-                  
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: GlassCard(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    option['title'] as String,
-                                    style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    option['description'] as String,
-                                    style: AppTextStyles.caption,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Switch(
-                              value: isEnabled,
-                              onChanged: (value) => _togglePrivacy(key),
-                              activeColor: AppColors.success,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ],
+        Text('🔒 Privacy Settings', style: WebParityTheme.panelTitleStyle),
+        const SizedBox(height: 20),
+        Column(
+          children: [
+            glass_card.GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Privacy Controls', style: WebParityTheme.cardTitleStyle),
+                  const SizedBox(height: 15),
+                  _PrivacyOption(
+                    title: 'Public Profile',
+                    description: 'Allow others to view your profile',
+                    value: mockPrivacySettings['profileVisibility'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Activity Visibility',
+                    description: 'Show your activity to others',
+                    value: mockPrivacySettings['activityVisibility'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Direct Messages',
+                    description: 'Allow others to send you messages',
+                    value: mockPrivacySettings['allowDirectMessages'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Online Status',
+                    description: 'Show when you are online',
+                    value: mockPrivacySettings['showOnlineStatus'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Data Sharing',
+                    description: 'Share data with ATLAS partners',
+                    value: mockPrivacySettings['dataSharing'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Analytics Tracking',
+                    description: 'Allow analytics and usage tracking',
+                    value: mockPrivacySettings['analyticsTracking'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Marketing Emails',
+                    description: 'Receive marketing communications',
+                    value: mockPrivacySettings['marketingEmails'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                  _PrivacyOption(
+                    title: 'Third-party Sharing',
+                    description: 'Share data with third parties',
+                    value: mockPrivacySettings['thirdPartySharing'] as bool,
+                    onChanged: (val) {
+                      // For stub implementation, we just show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Privacy setting updated')),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        GlassCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('🗂️ Data Management', style: AppTextStyles.h4),
-                const SizedBox(height: AppSpacing.md),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    GradientButton(
-                      text: 'Export My Data',
-                      onPressed: _exportData,
-                      gradient: AppColors.primaryGradient,
-                      width: 140,
+            const SizedBox(height: 20),
+            glass_card.GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Data Management', style: WebParityTheme.cardTitleStyle),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // For stub implementation, we just show a snackbar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Exporting your data...')),
+                        );
+                      },
+                      style: fallbackSecondaryButtonStyle,
+                      child: const Text('Export My Data'),
                     ),
-                    GradientButton(
-                      text: 'Anonymize Data',
-                      onPressed: _anonymizeData,
-                      gradient: AppColors.warningGradient,
-                      width: 140,
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // For stub implementation, we just show a snackbar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Anonymizing your data...')),
+                        );
+                      },
+                      style: fallbackWarningButtonStyle,
+                      child: const Text('Anonymize Data'),
                     ),
-                    GradientButton(
-                      text: 'Delete Account',
-                      onPressed: _deleteAccount,
-                      gradient: const LinearGradient(colors: [AppColors.error, AppColors.error]),
-                      width: 140,
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // For stub implementation, we just show a snackbar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Deleting your account...')),
+                        );
+                      },
+                      style: fallbackDangerButtonStyle,
+                      child: const Text('Delete Account'),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ],
+    );
+  }
+}
+
+class _PrivacyOption extends StatelessWidget {
+  final String title;
+  final String description;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _PrivacyOption({required this.title, required this.description, required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                Text(description, style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF48BB78),
+          ),
+        ],
+      ),
     );
   }
 }

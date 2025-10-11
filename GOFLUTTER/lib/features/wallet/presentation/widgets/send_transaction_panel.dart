@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/wallet_bloc.dart';
 import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
-import '../../../../shared/widgets/glass_card.dart' as glass_card;
+import '../../../../../shared/widgets/common_widgets.dart';
+import '../../../../shared/widgets/common_widgets.dart' as glass_card;
 
 class SendTransactionPanel extends StatefulWidget {
   const SendTransactionPanel({Key? key}) : super(key: key);

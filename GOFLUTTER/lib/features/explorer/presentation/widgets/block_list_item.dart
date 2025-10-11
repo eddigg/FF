@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../data/models/block_model.dart';
 import 'block_detail_modal.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/custom_widgets.dart';
+import '../../../../shared/widgets/common_widgets.dart';
 
 class BlockListItem extends StatelessWidget {
-  final BlockModel block;
+  final dynamic block; // Accept both BlockModel and Map
 
   const BlockListItem({Key? key, required this.block}) : super(key: key);
 
@@ -21,8 +20,11 @@ class BlockListItem extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.md),
-        child: EnhancedGlassCard(
+        margin: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.md,
+        ),
+        child: GlassCard(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
@@ -32,18 +34,18 @@ class BlockListItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Block #${block.index}',
+                      'Block #${_getBlockProperty('height')}',
                       style: AppTextStyles.h4.copyWith(fontSize: 18),
                     ),
                     Text(
-                      _formatTimestamp(block.timestamp),
+                      _getBlockProperty('timestamp').toString(),
                       style: AppTextStyles.caption,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Hash: ${_shortenHash(block.hash)}',
+                  'Hash: ${_shortenHash(_getBlockProperty('hash'))}',
                   style: AppTextStyles.address,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -55,18 +57,51 @@ class BlockListItem extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDetail('Transactions', block.transactions.length.toString()),
-                    _buildDetail('Validator', _shortenAddress(block.validator)),
+                    _buildDetail(
+                      'Transactions',
+                      _getBlockProperty('transactions').toString(),
+                    ),
+                    _buildDetail(
+                      'Validator',
+                      _shortenAddress(_getBlockProperty('miner') ?? 'Unknown'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                _buildDetail('Signature', _shortenHash(block.signature)),
+                _buildDetail(
+                  'Gas Used',
+                  _getBlockProperty('gasUsed').toString(),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  dynamic _getBlockProperty(String key) {
+    if (block is Map<String, dynamic>) {
+      return block[key];
+    } else if (block is BlockModel) {
+      switch (key) {
+        case 'height':
+          return block.index;
+        case 'hash':
+          return block.hash;
+        case 'timestamp':
+          return block.timestamp;
+        case 'transactions':
+          return block.transactions.length;
+        case 'miner':
+          return block.validator;
+        case 'gasUsed':
+          return 'N/A';
+        default:
+          return 'N/A';
+      }
+    }
+    return 'N/A';
   }
 
   Widget _buildDetail(String title, String value) {
@@ -80,7 +115,9 @@ class BlockListItem extends StatelessWidget {
   }
 
   String _formatTimestamp(int timestamp) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(
+      timestamp * 1000,
+    );
     return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
   }
 

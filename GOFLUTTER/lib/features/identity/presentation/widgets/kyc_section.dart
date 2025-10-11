@@ -1,204 +1,200 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/kyc_status_model.dart';
-import '../../data/models/user_profile_model.dart';
-import '../../presentation/bloc/identity_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../shared/themes/web_parity_theme.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
 
 class KycSection extends StatelessWidget {
-  final KycStatusModel kycStatus;
-  final UserProfileModel userProfile;
-
-  const KycSection({Key? key, required this.kycStatus, required this.userProfile}) : super(key: key);
-
-  void _startKYC(BuildContext context, String kycType) {
-    // For now, we'll just show a snackbar. In a real implementation, this would open a form
-    // to collect the required KYC information.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Starting $kycType verification...')),
-    );
-  }
-
-  void _checkKYCStatus(BuildContext context, String address) {
-    context.read<IdentityBloc>().add(CheckKYCStatus(address: address));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Checking KYC status...')),
-    );
-  }
+  const KycSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // For now, we'll use a placeholder address. In a real implementation, 
-    // this would come from the user profile or wallet service.
-    final userAddress = 'user_address_placeholder'; // Replace with actual user address from userProfile
-    
-    final kycItems = [
-      {
-        'key': 'personalInfo',
-        'title': 'Personal Information',
-        'description': 'Basic personal details verification',
-        'status': kycStatus.personalInfoStatus,
-        'date': kycStatus.personalInfoDate,
-      },
-      {
-        'key': 'identityDocument',
-        'title': 'Identity Document',
-        'description': 'Government-issued ID verification',
-        'status': kycStatus.identityDocumentStatus,
-        'date': kycStatus.identityDocumentDate,
-      },
-      {
-        'key': 'addressProof',
-        'title': 'Address Proof',
-        'description': 'Residential address verification',
-        'status': kycStatus.addressProofStatus,
-        'date': kycStatus.addressProofDate,
-      },
-      {
-        'key': 'financialInfo',
-        'title': 'Financial Information',
-        'description': 'Bank account and financial details',
-        'status': kycStatus.financialInfoStatus,
-        'date': kycStatus.financialInfoDate,
-      },
-      {
-        'key': 'sourceOfFunds',
-        'title': 'Source of Funds',
-        'description': 'Income and fund source verification',
-        'status': kycStatus.sourceOfFundsStatus,
-        'date': kycStatus.sourceOfFundsDate,
-      },
-    ];
+    // Mock KYC status data
+    final mockKycStatus = {
+      'personalInfoStatus': 'verified',
+      'personalInfoDate': '2024-01-15',
+      'identityDocumentStatus': 'verified',
+      'identityDocumentDate': '2024-01-16',
+      'addressProofStatus': 'pending',
+      'addressProofDate': '',
+      'financialInfoStatus': 'unverified',
+      'financialInfoDate': '',
+      'sourceOfFundsStatus': 'unverified',
+      'sourceOfFundsDate': '',
+    };
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GlassCard(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('🆔 KYC Verification Status', style: AppTextStyles.h4),
-                const SizedBox(height: AppSpacing.md),
-                ...kycItems.map((item) {
-                  final status = item['status'] as String;
-                  final statusIcon = status == 'verified'
-                      ? '✅'
-                      : status == 'pending'
-                          ? '⏳'
-                          : '❌';
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: GlassCard(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: status == 'verified'
-                                    ? AppColors.success.withValues(alpha: 0.1)
-                                    : status == 'pending'
-                                        ? AppColors.warning.withValues(alpha: 0.1)
-                                        : AppColors.error.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  statusIcon,
-                                  style: TextStyle(
-                                    color: status == 'verified'
-                                        ? AppColors.success
-                                        : status == 'pending'
-                                            ? AppColors.warning
-                                            : AppColors.error,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['title'] as String,
-                                    style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    item['description'] as String,
-                                    style: AppTextStyles.caption,
-                                  ),
-                                  if (item['date'] != null)
-                                    Text(
-                                      'Verified: ${item['date']}',
-                                      style: AppTextStyles.caption,
-                                    ),
-                                ],
-                              ),
-                            ),
-                            if (status == 'unverified')
-                              GradientButton(
-                                text: 'Start Verification',
-                                onPressed: () => _startKYC(context, item['key'] as String),
-                                width: 120,
-                              )
-                            else if (status == 'pending')
-                              GradientButton(
-                                text: 'Check Status',
-                                onPressed: () => _checkKYCStatus(context, userAddress),
-                                gradient: AppColors.warningGradient,
-                                width: 100,
-                              )
-                            else
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                                decoration: BoxDecoration(
-                                  color: AppColors.success,
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                ),
-                                child: const Text(
-                                  'Verified',
-                                  style: TextStyle(color: Colors.white, fontSize: 12),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ],
+        Text('🆔 KYC Verification', style: WebParityTheme.panelTitleStyle),
+        const SizedBox(height: 20),
+        Column(
+          children: [
+            glass_card.GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('KYC Verification Status', style: WebParityTheme.cardTitleStyle),
+                  const SizedBox(height: 15),
+                  _KycStatusItem(
+                    title: 'Personal Information',
+                    description: 'Basic personal details verification',
+                    status: mockKycStatus['personalInfoStatus'] as String,
+                    date: mockKycStatus['personalInfoDate'] as String,
+                  ),
+                  _KycStatusItem(
+                    title: 'Identity Document',
+                    description: 'Government-issued ID verification',
+                    status: mockKycStatus['identityDocumentStatus'] as String,
+                    date: mockKycStatus['identityDocumentDate'] as String,
+                  ),
+                  _KycStatusItem(
+                    title: 'Address Proof',
+                    description: 'Residential address verification',
+                    status: mockKycStatus['addressProofStatus'] as String,
+                    date: mockKycStatus['addressProofDate'] as String,
+                  ),
+                  _KycStatusItem(
+                    title: 'Financial Information',
+                    description: 'Bank account and financial details',
+                    status: mockKycStatus['financialInfoStatus'] as String,
+                    date: mockKycStatus['financialInfoDate'] as String,
+                  ),
+                  _KycStatusItem(
+                    title: 'Source of Funds',
+                    description: 'Income and fund source verification',
+                    status: mockKycStatus['sourceOfFundsStatus'] as String,
+                    date: mockKycStatus['sourceOfFundsDate'] as String,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        const GlassCard(
-          child: Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('💎 KYC Benefits', style: AppTextStyles.h4),
-                SizedBox(height: AppSpacing.md),
-                Text(
-                  '• Higher transaction limits\n'
-                  '• Access to advanced DeFi features\n'
-                  '• Enhanced security and fraud protection\n'
-                  '• Priority customer support\n'
-                  '• Governance voting rights',
-                  style: AppTextStyles.body1,
-                ),
-              ],
+            const SizedBox(height: 20),
+            glass_card.GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('KYC Benefits', style: WebParityTheme.cardTitleStyle),
+                  const SizedBox(height: 15),
+                  _buildBenefitItem('Higher transaction limits'),
+                  _buildBenefitItem('Access to advanced DeFi features'),
+                  _buildBenefitItem('Enhanced security and fraud protection'),
+                  _buildBenefitItem('Priority customer support'),
+                  _buildBenefitItem('Governance voting rights'),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildBenefitItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_outline, color: Color(0xFF48BB78), size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 16, color: Color(0xFF4A5568)))),
+        ],
+      ),
+    );
+  }
+}
+
+class _KycStatusItem extends StatelessWidget {
+  final String title;
+  final String description;
+  final String status;
+  final String? date;
+
+  const _KycStatusItem({required this.title, required this.description, required this.status, this.date});
+
+  @override
+  Widget build(BuildContext context) {
+    Color iconColor;
+    String iconText;
+    Color statusButtonColor;
+    String statusButtonText;
+    VoidCallback? onButtonPressed;
+
+    switch (status.toLowerCase()) {
+      case 'verified':
+        iconColor = const Color(0xFF48BB78);
+        iconText = '✅';
+        statusButtonColor = const Color(0xFF48BB78);
+        statusButtonText = 'Verified';
+        onButtonPressed = null;
+        break;
+      case 'pending':
+        iconColor = const Color(0xFFED8936);
+        iconText = '⏳';
+        statusButtonColor = const Color(0xFFED8936);
+        statusButtonText = 'Check Status';
+        onButtonPressed = () {
+          // For stub implementation, we just show a snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Checking KYC status...')),
+          );
+        };
+        break;
+      case 'unverified':
+      default:
+        iconColor = const Color(0xFFF56565);
+        iconText = '❌';
+        statusButtonColor = const Color(0xFF718096);
+        statusButtonText = 'Start Verification';
+        onButtonPressed = () {
+          // For stub implementation, we just show a snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Starting verification process...')),
+          );
+        };
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(child: Text(iconText, style: const TextStyle(fontSize: 20))),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                Text(description, style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+                if (date != null && date!.isNotEmpty) Text('Verified: $date', style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: onButtonPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: statusButtonColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(statusButtonText, style: const TextStyle(fontSize: 14)),
+          ),
+        ],
+      ),
     );
   }
 }

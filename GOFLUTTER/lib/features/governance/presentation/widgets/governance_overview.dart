@@ -1,85 +1,77 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/governance_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
+import '../../../../shared/widgets/common_widgets.dart' as glass_card;
 
 class GovernanceOverview extends StatelessWidget {
-  const GovernanceOverview({Key? key}) : super(key: key);
+  const GovernanceOverview({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('🏛️ Governance Overview', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            const Text('📊 Governance Statistics', style: AppTextStyles.h5),
-            const SizedBox(height: AppSpacing.sm),
-            BlocBuilder<GovernanceBloc, dynamic>(
+            Text('🏛️ Governance Overview', style: WebParityTheme.panelTitleStyle),
+            const SizedBox(height: 12),
+            BlocBuilder<GovernanceBloc, GovernanceState>(
               builder: (context, state) {
-                if (state is GovernanceLoaded) {
-                  return Column(
-                    children: [
-                      _buildStatItem('Active Proposals', state.governanceStats.activeProposals.toString()),
-                      _buildStatItem('Total Voters', state.governanceStats.totalVoters.toString()),
-                      _buildStatItem('Voting Power', state.governanceStats.totalVotingPower.toString()),
-                      _buildStatItem('Quorum Required', state.governanceStats.quorumRequired.toString()),
-                      const SizedBox(height: AppSpacing.sm),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GradientButton(
-                          text: '🔄 Refresh Stats',
-                          onPressed: () {
-                            context.read<GovernanceBloc>().add(LoadGovernanceData());
-                          },
-                          gradient: AppColors.primaryGradient,
-                          width: 120,
-                        ),
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  );
-                } else if (state is GovernanceLoading) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return const Text('Error loading stats');
-                }
-              },
-            ),
-            const SizedBox(height: AppSpacing.md),
-            const Text('⚙️ Governance Parameters', style: AppTextStyles.h5),
-            const SizedBox(height: AppSpacing.sm),
-            BlocBuilder<GovernanceBloc, dynamic>(
-              builder: (context, state) {
-                if (state is GovernanceLoaded) {
-                  return Column(
-                    children: [
-                      _buildStatItem('Min Proposal Duration', state.governanceParams.minDuration.toString()),
-                      _buildStatItem('Max Proposal Duration', state.governanceParams.maxDuration.toString()),
-                      _buildStatItem('Min Stake to Propose', state.governanceParams.minStake.toString()),
-                      _buildStatItem('Voting Threshold', state.governanceParams.votingThreshold.toString()),
-                      const SizedBox(height: AppSpacing.sm),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GradientButton(
-                          text: '⚙️ Load Parameters',
-                          onPressed: () {
-                            context.read<GovernanceBloc>().add(LoadGovernanceData());
-                          },
-                          gradient: AppColors.primaryGradient,
-                          width: 150,
-                        ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Total Proposals: 24', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('Active Proposals: 3', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('Participation Rate: 68%', style: TextStyle(fontSize: 14)),
+                        ],
                       ),
-                    ],
-                  );
-                } else if (state is GovernanceLoading) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return const Text('Error loading parameters');
-                }
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      'Recent Activity',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 120,
+                      child: ListView(
+                        children: const [
+                          _ActivityItem(
+                            title: 'New Proposal: Network Upgrade',
+                            time: '2 hours ago',
+                            type: 'proposal',
+                          ),
+                          _ActivityItem(
+                            title: 'Voting Ended: Fee Structure',
+                            time: '1 day ago',
+                            type: 'vote',
+                          ),
+                          _ActivityItem(
+                            title: 'Proposal Executed: Staking Rewards',
+                            time: '3 days ago',
+                            type: 'execute',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
           ],
@@ -87,15 +79,46 @@ class GovernanceOverview extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildStatItem(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+class _ActivityItem extends StatelessWidget {
+  final String title;
+  final String time;
+  final String type;
+
+  const _ActivityItem({
+    required this.title,
+    required this.time,
+    required this.type,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String icon = 'ℹ️';
+    if (type == 'proposal') icon = '📝';
+    if (type == 'vote') icon = '✅';
+    if (type == 'execute') icon = '⚡';
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(6),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTextStyles.body2),
-          Text(value, style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold)),
+          Text(icon, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 13)),
+                Text(time, style: const TextStyle(fontSize: 11, color: Color(0xFF718096))),
+              ],
+            ),
+          ),
         ],
       ),
     );

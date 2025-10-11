@@ -10,11 +10,15 @@ class BlockchainApiService extends BaseApiClient {
     try {
       final response = await get<Map<String, dynamic>>('balance', queryParameters: {'address': address});
       if (response.containsKey('balance')) {
-        return (response['balance'] as int).toDouble();
+        if (response['balance'] is int) {
+          return (response['balance'] as int).toDouble();
+        } else if (response['balance'] is double) {
+          return response['balance'] as double;
+        }
       }
       throw network_exceptions.ApiException(message: 'Invalid response format', statusCode: 500);
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get balance: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -26,7 +30,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response.containsKey('status') && response['status'] == 'Faucet tokens credited';
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to request faucet: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -44,7 +48,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response.containsKey('status') && response['status'] == 'Validator registered successfully';
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to register validator: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -68,7 +72,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to submit transaction: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -84,7 +88,7 @@ class BlockchainApiService extends BaseApiClient {
       }
       return [];
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get transaction history: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -105,7 +109,7 @@ class BlockchainApiService extends BaseApiClient {
       final response = await get<List<dynamic>>('blocks', queryParameters: {'limit': limit, 'offset': offset});
       return List<Map<String, dynamic>>.from(response.map((item) => item as Map<String, dynamic>));
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get blocks: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -115,7 +119,7 @@ class BlockchainApiService extends BaseApiClient {
       final response = await get<List<dynamic>>('validators');
       return List<Map<String, dynamic>>.from(response.map((item) => item as Map<String, dynamic>));
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get validators: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -136,7 +140,27 @@ class BlockchainApiService extends BaseApiClient {
       final response = await get<List<dynamic>>('mempool');
       return List<Map<String, dynamic>>.from(response.map((item) => item as Map<String, dynamic>));
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get mempool: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  // Get peer information
+  Future<List<Map<String, dynamic>>> getPeers() async {
+    try {
+      final response = await get<List<dynamic>>('peers');
+      return List<Map<String, dynamic>>.from(response.map((item) => item as Map<String, dynamic>));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Get network architecture
+  Future<Map<String, dynamic>> getNetworkArchitecture() async {
+    try {
+      final response = await get<Map<String, dynamic>>('network/architecture');
+      return response;
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -146,7 +170,7 @@ class BlockchainApiService extends BaseApiClient {
       final response = await get<Map<String, dynamic>>('status');
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get status: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -158,7 +182,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to connect wallet: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -173,7 +197,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to authenticate: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -188,7 +212,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to get wallet info: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -213,7 +237,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to send transaction: ${e.toString()}');
+      rethrow;
     }
   }
 
@@ -228,7 +252,7 @@ class BlockchainApiService extends BaseApiClient {
       });
       return response;
     } catch (e) {
-      throw network_exceptions.ApiException(message: 'Failed to disconnect: ${e.toString()}');
+      rethrow;
     }
   }
 }

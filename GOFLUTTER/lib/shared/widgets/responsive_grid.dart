@@ -8,18 +8,20 @@ class ResponsiveGrid extends StatelessWidget {
   final double? runSpacing;
 
   const ResponsiveGrid({
-    Key? key,
+    super.key,
     required this.children,
     this.spacing,
     this.runSpacing,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = WebParityTheme.getGridColumns(screenWidth);
-    final crossAxisSpacing = spacing ?? WebParityTheme.getResponsiveSpacing(screenWidth);
-    final mainAxisSpacing = runSpacing ?? WebParityTheme.getResponsiveSpacing(screenWidth);
+    final crossAxisSpacing =
+        spacing ?? WebParityTheme.getResponsiveSpacing(screenWidth);
+    final mainAxisSpacing =
+        runSpacing ?? WebParityTheme.getResponsiveSpacing(screenWidth);
 
     return GridView.count(
       crossAxisCount: crossAxisCount,

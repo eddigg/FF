@@ -2,28 +2,28 @@ import 'package:flutter/material.dart';
 import '../themes/web_colors.dart';
 import '../themes/web_gradients.dart';
 import '../themes/web_shadows.dart';
-import 'glass_card.dart';
+import 'common_widgets.dart';
 
 /// Loading indicator widget matching web loading patterns
 class LoadingIndicator extends StatelessWidget {
   final String message;
   final bool showSkeleton;
-  
+
   const LoadingIndicator({
-    Key? key,
+    super.key,
     this.message = 'Loading...',
     this.showSkeleton = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     if (showSkeleton) {
       return _buildSkeletonLoading();
     }
-    
+
     return _buildSpinnerLoading();
   }
-  
+
   /// Build spinner loading indicator matching web patterns
   Widget _buildSpinnerLoading() {
     return Center(
@@ -35,9 +35,9 @@ class LoadingIndicator extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              gradient: WebGradients.buttonPrimary, // Use buttonPrimary instead of primary
+              gradient: WebGradients.buttonPrimary,
               shape: BoxShape.circle,
-              boxShadow: WebShadows.card, // Use card instead of medium
+              boxShadow: WebShadows.card,
             ),
             child: const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(WebColors.textPrimary),
@@ -56,7 +56,7 @@ class LoadingIndicator extends StatelessWidget {
       ),
     );
   }
-  
+
   /// Build skeleton loading state matching web patterns
   Widget _buildSkeletonLoading() {
     return Column(
@@ -65,7 +65,7 @@ class LoadingIndicator extends StatelessWidget {
         // Skeleton header
         _buildSkeletonLine(widthFactor: 0.8, height: 24),
         const SizedBox(height: 12),
-        
+
         // Skeleton content lines
         _buildSkeletonLine(widthFactor: 1.0, height: 16),
         const SizedBox(height: 8),
@@ -73,7 +73,7 @@ class LoadingIndicator extends StatelessWidget {
         const SizedBox(height: 8),
         _buildSkeletonLine(widthFactor: 0.7, height: 16),
         const SizedBox(height: 16),
-        
+
         // Skeleton card grid
         const Wrap(
           spacing: 16,
@@ -88,14 +88,17 @@ class LoadingIndicator extends StatelessWidget {
       ],
     );
   }
-  
+
   /// Build a skeleton line placeholder
-  Widget _buildSkeletonLine({required double widthFactor, required double height}) {
+  Widget _buildSkeletonLine({
+    required double widthFactor,
+    required double height,
+  }) {
     return Container(
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: WebGradients.cardBackground, // Use cardBackground instead of skeleton
+        gradient: WebGradients.cardBackground,
         borderRadius: BorderRadius.circular(4),
       ),
     );
@@ -120,39 +123,39 @@ class _SkeletonCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                gradient: WebGradients.cardBackground, // Use cardBackground instead of skeleton
+                gradient: WebGradients.cardBackground,
                 shape: BoxShape.circle,
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Skeleton title placeholder
             Container(
               height: 20,
               width: 120,
               decoration: BoxDecoration(
-                gradient: WebGradients.cardBackground, // Use cardBackground instead of skeleton
+                gradient: WebGradients.cardBackground,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
             const SizedBox(height: 8),
-            
+
             // Skeleton description placeholder
             Container(
               height: 14,
               width: 160,
               decoration: BoxDecoration(
-                gradient: WebGradients.cardBackground, // Use cardBackground instead of skeleton
+                gradient: WebGradients.cardBackground,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
             const SizedBox(height: 8),
-            
+
             Container(
               height: 14,
               width: 100,
               decoration: BoxDecoration(
-                gradient: WebGradients.cardBackground, // Use cardBackground instead of skeleton
+                gradient: WebGradients.cardBackground,
                 borderRadius: BorderRadius.circular(4),
               ),
             ),

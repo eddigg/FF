@@ -34,6 +34,8 @@ class NodeDashboardLoaded extends NodeDashboardState {
   final NetworkStatsModel networkStats;
   final ValidatorModel validatorInfo;
   final ShardingInfoModel shardingInfo;
+  final List<dynamic> peers; // Peer information for monitoring
+  final List<String> nodeLogs; // Node operation logs
 
   const NodeDashboardLoaded({
     required this.nodeMetrics,
@@ -41,6 +43,8 @@ class NodeDashboardLoaded extends NodeDashboardState {
     required this.networkStats,
     required this.validatorInfo,
     required this.shardingInfo,
+    this.peers = const [], // Default empty list
+    this.nodeLogs = const [], // Default empty list
   });
 
   @override
@@ -50,6 +54,8 @@ class NodeDashboardLoaded extends NodeDashboardState {
         networkStats,
         validatorInfo,
         shardingInfo,
+        peers,
+        nodeLogs,
       ];
 }
 

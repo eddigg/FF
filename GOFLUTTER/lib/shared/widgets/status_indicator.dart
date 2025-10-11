@@ -1,62 +1,81 @@
 import 'package:flutter/material.dart';
-import '../themes/web_parity_theme.dart';
-import '../themes/web_colors.dart';
-import '../themes/web_typography.dart';
+import '../themes/app_colors.dart';
+import '../themes/app_spacing.dart';
 
-/// Status indicator widget with animated pulse effect matching web design
-class StatusIndicator extends StatefulWidget {
-  final String text;
-  final StatusType type;
+/// Different status types for indicators
+enum StatusType {
+  online,
+  offline,
+  connecting,
+  error,
+  warning,
+  success,
+}
+
+/// A small status indicator widget
+class StatusIndicator extends StatelessWidget {
+  final StatusType status;
   final double size;
+  final bool showLabel;
+  final String? customLabel;
 
   const StatusIndicator({
     Key? key,
-    required this.text,
-    this.type = StatusType.success,
-    this.size = WebParityTheme.statusDotSize,
+    required this.status,
+    this.size = AppSpacing.iconSm,
+    this.showLabel = true,
+    this.customLabel,
   }) : super(key: key);
 
-  @override
-  State<StatusIndicator> createState() => _StatusIndicatorState();
-}
-
-enum StatusType {
-  success,
-  warning,
-  error,
-  info,
-}
-
-class _StatusIndicatorState extends State<StatusIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: WebParityTheme.pulseAnimationDuration,
-      vsync: this,
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  // Helper method to get color based on status type
   Color _getColor() {
-    switch (widget.type) {
-      case StatusType.warning:
-        return WebColors.warning;
-      case StatusType.error:
-        return WebColors.error;
-      case StatusType.info:
-        return WebColors.info;
+    switch (status) {
+      case StatusType.online:
       case StatusType.success:
-        return WebColors.statusDot;
+        return AppColors.success;
+      case StatusType.connecting:
+        return AppColors.warning;
+      case StatusType.error:
+        return AppColors.error;
+      case StatusType.offline:
+        return AppColors.border;
+      case StatusType.warning:
+        return AppColors.warning;
+    }
+  }
+
+  String _getLabel() {
+    if (customLabel != null) return customLabel!;
+
+    switch (status) {
+      case StatusType.online:
+        return 'Online';
+      case StatusType.offline:
+        return 'Offline';
+      case StatusType.connecting:
+        return 'Connecting';
+      case StatusType.error:
+        return 'Error';
+      case StatusType.warning:
+        return 'Warning';
+      case StatusType.success:
+        return 'Success';
+    }
+  }
+
+  IconData _getIcon() {
+    switch (status) {
+      case StatusType.online:
+        return Icons.circle;
+      case StatusType.offline:
+        return Icons.circle_outlined;
+      case StatusType.connecting:
+        return Icons.hourglass_empty;
+      case StatusType.error:
+        return Icons.error;
+      case StatusType.warning:
+        return Icons.warning;
+      case StatusType.success:
+        return Icons.check_circle;
     }
   }
 
@@ -65,26 +84,24 @@ class _StatusIndicatorState extends State<StatusIndicator>
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        FadeTransition(
-          opacity: Tween<double>(begin: 1.0, end: 0.5).animate(
-            CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: _getColor(),
+            shape: BoxShape.circle,
           ),
-          child: Container(
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              color: _getColor(),
-              shape: BoxShape.circle,
+        ),
+        if (showLabel) ...[
+          const SizedBox(width: 8),
+          Text(
+            _getLabel(),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
             ),
           ),
-        ),
-        const SizedBox(width: WebParityTheme.spacingXs),
-        Text(
-          widget.text,
-          style: WebTypography.caption.copyWith(
-            color: WebColors.textSecondary,
-          ),
-        ),
+        ],
       ],
     );
   }

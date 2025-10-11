@@ -1,72 +1,86 @@
 import 'package:flutter/material.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/node_dashboard_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class PeerMonitoringSection extends StatelessWidget {
-  const PeerMonitoringSection({Key? key}) : super(key: key);
+  const PeerMonitoringSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Peer Monitoring', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
+            Text('Peer Monitoring', style: WebParityTheme.panelTitleStyle),
+            const SizedBox(height: 12),
             BlocBuilder<NodeDashboardBloc, NodeDashboardState>(
               builder: (context, state) {
                 if (state is NodeDashboardLoaded) {
                   return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildPeerInfoCard('Connected Peers', state.networkStats.totalValidators.toString()),
-                      _buildPeerInfoCard('Network Hash Rate', state.networkStats.networkHashRate),
-                      _buildPeerInfoCard('Average Block Time', state.networkStats.avgBlockTime),
-                      _buildPeerInfoCard('Network Difficulty', state.networkStats.networkDifficulty),
+                      const Text('Connected Peers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 150,
+                        child: ListView.builder(
+                          itemCount: state.validators.length,
+                          itemBuilder: (context, index) {
+                            final peer = state.validators[index];
+                            return _PeerItem(peer: peer);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      const Text('Peer Management', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.primaryButtonStyle, child: const Text('Add Peer')),
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.secondaryButtonStyle, child: const Text('Remove Peer')),
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.dangerButtonStyle, child: const Text('Ban Peer')),
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.primaryButtonStyle, child: const Text('Refresh Peers')),
+                        ],
+                      ),
                     ],
                   );
-                } else if (state is NodeDashboardLoading) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return const Text('Error loading peer information');
                 }
+                return const Center(child: CircularProgressIndicator());
               },
-            ),
-            const SizedBox(height: AppSpacing.md),
-            const Text('Peer Management', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                GradientButton(text: 'Add Peer', onPressed: () {}),
-                GradientButton(text: 'Remove Peer', onPressed: () {}),
-                GradientButton(text: 'Ban Peer', onPressed: () {}),
-                GradientButton(text: 'Refresh Peers', onPressed: () {}),
-              ],
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildPeerInfoCard(String title, String value) {
-    return GlassCard(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppTextStyles.h5),
-            const SizedBox(height: AppSpacing.sm),
-            Text(value, style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold)),
-          ],
-        ),
+class _PeerItem extends StatelessWidget {
+  final dynamic peer; // Replace with PeerModel
+
+  const _PeerItem({required this.peer});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(peer['address'].toString(), style: const TextStyle(fontFamily: 'monospace', fontSize: 13, color: Color(0xFF666666))),
+          Text('Stake: ${peer['stake']}', style: const TextStyle(fontSize: 13)),
+        ],
       ),
     );
   }

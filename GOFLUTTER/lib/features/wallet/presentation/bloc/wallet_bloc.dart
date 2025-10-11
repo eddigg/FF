@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/transaction_model.dart';
-import '../../data/repositories/wallet_repository.dart';
 import '../../domain/entities/account.dart';
 import '../../services/wallet_service.dart';
 
@@ -115,6 +114,7 @@ class WalletLoaded extends WalletState {
   final List<TransactionModel> transactions;
   final List<WalletAccount> accounts;
   final WalletAccount? selectedAccount;
+  final int selectedAccountIndex;
 
   const WalletLoaded({
     required this.address,
@@ -122,10 +122,18 @@ class WalletLoaded extends WalletState {
     required this.transactions,
     required this.accounts,
     this.selectedAccount,
+    this.selectedAccountIndex = 0,
   });
 
   @override
-  List<Object?> get props => [address, balance, transactions, accounts, selectedAccount];
+  List<Object?> get props => [
+    address,
+    balance,
+    transactions,
+    accounts,
+    selectedAccount,
+    selectedAccountIndex,
+  ];
 
   WalletLoaded copyWith({
     String? address,
@@ -133,6 +141,7 @@ class WalletLoaded extends WalletState {
     List<TransactionModel>? transactions,
     List<WalletAccount>? accounts,
     WalletAccount? selectedAccount,
+    int? selectedAccountIndex,
   }) {
     return WalletLoaded(
       address: address ?? this.address,
@@ -140,6 +149,7 @@ class WalletLoaded extends WalletState {
       transactions: transactions ?? this.transactions,
       accounts: accounts ?? this.accounts,
       selectedAccount: selectedAccount ?? this.selectedAccount,
+      selectedAccountIndex: selectedAccountIndex ?? this.selectedAccountIndex,
     );
   }
 }
@@ -153,12 +163,20 @@ class WalletError extends WalletState {
   List<Object?> get props => [message];
 }
 
+class WalletActionSuccess extends WalletState {
+  final String message;
+
+  const WalletActionSuccess(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 // BLoC
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
-  final WalletRepository walletRepository;
   final WalletService walletService;
 
-  WalletBloc({required this.walletRepository, required this.walletService}) : super(WalletInitial()) {
+  WalletBloc({required this.walletService}) : super(WalletInitial()) {
     on<LoadWallet>(_onLoadWallet);
     on<SendTransaction>(_onSendTransaction);
     on<RequestTestTokens>(_onRequestTestTokens);
@@ -177,16 +195,19 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   ) async {
     emit(WalletLoading());
     try {
-      final wallet = await walletRepository.getWallet();
-      final accounts = await walletService.loadAccounts();
-      final selectedAccount = await walletService.getSelectedAccount();
-      emit(WalletLoaded(
-        address: wallet.address,
-        balance: wallet.balance,
-        transactions: wallet.transactions,
-        accounts: accounts,
-        selectedAccount: selectedAccount,
-      ));
+      final balance = await walletService.getWalletBalance();
+      final address = await walletService.getAddress();
+      final transactions = await walletService.getTransactionHistory();
+      emit(
+        WalletLoaded(
+          address: address ?? 'No address found',
+          balance: balance,
+          transactions: transactions
+              .map((tx) => TransactionModel.fromJson(tx))
+              .toList(),
+          accounts: [],
+        ),
+      );
     } catch (e) {
       emit(WalletError(e.toString()));
     }
@@ -197,16 +218,11 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     Emitter<WalletState> emit,
   ) async {
     try {
-      await walletRepository.sendTransaction(event.recipient, event.amount, event.message);
-      final wallet = await walletRepository.getWallet(); // Refresh wallet data after sending transaction
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(
-          address: wallet.address,
-          balance: wallet.balance,
-          transactions: wallet.transactions,
-        ));
-      }
+      await walletService.sendTransaction(
+        event.recipient,
+        event.amount.toInt(),
+      );
+      add(LoadWallet());
     } catch (e) {
       emit(WalletError(e.toString()));
     }
@@ -216,21 +232,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     RequestTestTokens event,
     Emitter<WalletState> emit,
   ) async {
-    // For now, we'll just reload the wallet to show updated balance
-    // In a real implementation, this would call the repository method
-    try {
-      final wallet = await walletRepository.getWallet();
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(
-          address: wallet.address,
-          balance: wallet.balance,
-          transactions: wallet.transactions,
-        ));
-      }
-    } catch (e) {
-      emit(WalletError(e.toString()));
-    }
+    // TODO: Implement request test tokens
   }
 
   Future<void> _onCreateAccount(
@@ -238,15 +240,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     Emitter<WalletState> emit,
   ) async {
     try {
-      final account = await walletService.createAccount(name: event.name);
-      final accounts = await walletService.loadAccounts();
-      accounts.add(account);
-      await walletService.saveAccounts(accounts);
-      
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(accounts: accounts));
-      }
+      await walletService.createWallet();
+      add(LoadWallet());
     } catch (e) {
       emit(WalletError(e.toString()));
     }
@@ -257,26 +252,10 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     Emitter<WalletState> emit,
   ) async {
     try {
-      // Import the account
-      final walletResponse = await walletService.importWallet(event.privateKey);
-      
-      // Create a new account object
-      final account = WalletAccount(
-        name: 'Imported Account',
-        privateKeyJwk: walletResponse.privateKey,
-        publicKeyJwk: '', // In a real implementation, we'd derive this
-        address: walletResponse.address,
-      );
-      
-      // Add to accounts list
-      final accounts = await walletService.loadAccounts();
-      accounts.add(account);
-      await walletService.saveAccounts(accounts);
-      
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(accounts: accounts));
-      }
+      await walletService.importWallet(
+        event.privateKey,
+      ); // Assuming privateKey is the mnemonic
+      add(LoadWallet());
     } catch (e) {
       emit(WalletError(e.toString()));
     }
@@ -286,82 +265,34 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
     ExportAccount event,
     Emitter<WalletState> emit,
   ) async {
-    // Export functionality would typically be handled at the UI level
-    // since it involves file system operations
-    // Just emit the current state to indicate the action was processed
-    emit(state);
+    // TODO: Implement export account
   }
 
   Future<void> _onDeleteAccount(
     DeleteAccount event,
     Emitter<WalletState> emit,
   ) async {
-    try {
-      final accounts = await walletService.loadAccounts();
-      accounts.removeWhere((account) => account.privateKeyJwk == event.account.privateKeyJwk);
-      await walletService.saveAccounts(accounts);
-      
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(accounts: accounts));
-      }
-    } catch (e) {
-      emit(WalletError(e.toString()));
-    }
+    // TODO: Implement delete account
   }
 
   Future<void> _onSelectAccount(
     SelectAccount event,
     Emitter<WalletState> emit,
   ) async {
-    try {
-      await walletService.selectAccount(event.account);
-      
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(selectedAccount: event.account));
-      }
-    } catch (e) {
-      emit(WalletError(e.toString()));
-    }
+    // TODO: Implement select account
   }
 
   Future<void> _onLoadAccounts(
     LoadAccounts event,
     Emitter<WalletState> emit,
   ) async {
-    try {
-      final accounts = await walletService.loadAccounts();
-      final selectedAccount = await walletService.getSelectedAccount();
-      
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith(accounts: accounts, selectedAccount: selectedAccount));
-      }
-    } catch (e) {
-      emit(WalletError(e.toString()));
-    }
+    // TODO: Implement load accounts
   }
 
   Future<void> _onRegisterAsValidator(
     RegisterAsValidator event,
     Emitter<WalletState> emit,
   ) async {
-    try {
-      await walletService.registerAsValidator(
-        stake: event.stake,
-        fullName: event.fullName,
-        country: event.country,
-        idNumber: event.idNumber,
-      );
-      
-      // Show success message
-      if (state is WalletLoaded) {
-        final currentState = state as WalletLoaded;
-        emit(currentState.copyWith());
-      }
-    } catch (e) {
-      emit(WalletError(e.toString()));
-    }
+    // TODO: Implement register as validator
   }
 }

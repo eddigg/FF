@@ -56,6 +56,16 @@ class CheckKYCStatus extends IdentityEvent {
   List<Object> get props => [address];
 }
 
+class UpdatePrivacySetting extends IdentityEvent {
+  final String setting;
+  final dynamic value;
+
+  const UpdatePrivacySetting({required this.setting, required this.value});
+
+  @override
+  List<Object> get props => [setting, value];
+}
+
 // States
 abstract class IdentityState extends Equatable {
   const IdentityState();
@@ -118,6 +128,7 @@ class IdentityBloc extends Bloc<IdentityEvent, IdentityState> {
     on<UpdateSocialLinks>(_onUpdateSocialLinks);
     on<SubmitKYC>(_onSubmitKYC);
     on<CheckKYCStatus>(_onCheckKYCStatus);
+    on<UpdatePrivacySetting>(_onUpdatePrivacySetting);
   }
 
   Future<void> _onLoadIdentityData(
@@ -197,8 +208,22 @@ class IdentityBloc extends Bloc<IdentityEvent, IdentityState> {
   ) async {
     try {
       await identityRepository.checkKYCStatus(event.address);
-      
+
       // Reload the data to show updated KYC status
+      add(LoadIdentityData());
+    } catch (e) {
+      emit(IdentityError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdatePrivacySetting(
+    UpdatePrivacySetting event,
+    Emitter<IdentityState> emit,
+  ) async {
+    try {
+      await identityRepository.updatePrivacySetting(event.setting, event.value);
+
+      // Reload the data to show updated privacy settings
       add(LoadIdentityData());
     } catch (e) {
       emit(IdentityError(e.toString()));

@@ -1,204 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/node_dashboard_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class ShardingManagementSection extends StatelessWidget {
-  const ShardingManagementSection({Key? key}) : super(key: key);
+  const ShardingManagementSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Sharding Management', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _buildShardingCard(
-                    'Shard Overview',
-                    [
-                      GradientButton(
-                        text: '🔄 Refresh Status',
-                        onPressed: () {
-                          // TODO: Implement refresh sharding status
-                        },
-                        gradient: AppColors.secondaryGradient,
-                        width: double.infinity,
+            Text('Sharding Management', style: WebParityTheme.panelTitleStyle),
+            const SizedBox(height: 12),
+            BlocBuilder<NodeDashboardBloc, NodeDashboardState>(
+              builder: (context, state) {
+                if (state is NodeDashboardLoaded) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Shard Configuration', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8F9FA),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Shard ID: 0x01', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                            SizedBox(height: 4),
+                            Text('Nodes in Shard: 24', style: TextStyle(fontSize: 14)),
+                            SizedBox(height: 4),
+                            Text('Shard Status: Active', style: TextStyle(fontSize: 14)),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      BlocBuilder<NodeDashboardBloc, NodeDashboardState>(
-                        builder: (context, state) {
-                          if (state is NodeDashboardLoaded) {
-                            return Text(
-                              state.shardingInfo.shardOverview,
-                              style: AppTextStyles.body2,
-                            );
-                          } else {
-                            return const Text('Loading...');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _buildShardingCard(
-                    'Validator Assignment',
-                    [
-                      _buildTextField('Validator Address', '0x...'),
-                      const SizedBox(height: AppSpacing.sm),
-                      _buildDropdown('Shard ID', ['Shard 0', 'Shard 1', 'Shard 2', 'Shard 3']),
-                      const SizedBox(height: AppSpacing.sm),
-                      GradientButton(
-                        text: '👤 Assign Validator',
-                        onPressed: () {
-                          // TODO: Implement assign validator
-                        },
-                        width: double.infinity,
+                      const SizedBox(height: 15),
+                      const Text('Shard Operations', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.primaryButtonStyle, child: const Text('🔄 Rebalance')),
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.warningButtonStyle, child: const Text('⚙️ Configure')),
+                          ElevatedButton(onPressed: () {}, style: WebParityTheme.dangerButtonStyle, child: const Text('⏹️ Stop Shard')),
+                        ],
                       ),
                     ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _buildShardingCard(
-                    'Cross-Shard Transactions',
-                    [
-                      _buildDropdown('Source Shard', ['Shard 0', 'Shard 1', 'Shard 2', 'Shard 3']),
-                      const SizedBox(height: AppSpacing.sm),
-                      _buildDropdown('Target Shard', ['Shard 1', 'Shard 2', 'Shard 3', 'Shard 0']),
-                      const SizedBox(height: AppSpacing.sm),
-                      _buildTextField('Transaction Data (JSON)', '{"amount": 100, "recipient": "0x..."}', maxLines: 3),
-                      const SizedBox(height: AppSpacing.sm),
-                      GradientButton(
-                        text: '🔗 Create Cross-Shard TX',
-                        onPressed: () {
-                          // TODO: Implement create cross-shard transaction
-                        },
-                        width: double.infinity,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _buildShardingCard(
-                    'Shard Statistics',
-                    [
-                      GradientButton(
-                        text: '🔍 Get Shard Info',
-                        onPressed: () {
-                          // TODO: Implement get shard info
-                        },
-                        width: double.infinity,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _buildDropdown('Shard ID', ['Shard 0', 'Shard 1', 'Shard 2', 'Shard 3']),
-                      const SizedBox(height: AppSpacing.sm),
-                      GradientButton(
-                        text: '📊 Load Statistics',
-                        onPressed: () {
-                          // TODO: Implement load statistics
-                        },
-                        width: double.infinity,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                  );
+                }
+                return const Center(child: CircularProgressIndicator());
+              },
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildShardingCard(String title, List<Widget> children) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppTextStyles.h5.copyWith(color: AppColors.primary)),
-            const SizedBox(height: AppSpacing.sm),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
+class _ShardCard extends StatelessWidget {
+  final String title;
+  final String? content;
+  final Widget? child;
+  final String? buttonText;
+  final VoidCallback? onButtonPressed;
 
-  Widget _buildTextField(String label, String hint, {int maxLines = 1}) {
-    return TextField(
-      maxLines: maxLines,
-      style: AppTextStyles.body1,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      ),
-    );
-  }
+  const _ShardCard({
+    required this.title,
+    this.content,
+    this.child,
+    this.buttonText,
+    this.onButtonPressed,
+  });
 
-  Widget _buildDropdown(String label, List<String> items) {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE9ECEF)),
       ),
-      items: items.map((String item) {
-        return DropdownMenuItem<String>(
-          value: item,
-          child: Text(item, style: AppTextStyles.body1),
-        );
-      }).toList(),
-      onChanged: (String? newValue) {
-        // TODO: Handle dropdown change
-      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF1E3C72),
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (content != null)
+            Text(
+              content!,
+              style: const TextStyle(fontSize: 14, color: Color(0xFF4A5568)),
+            ),
+          if (child != null) child!,
+          if (buttonText != null && onButtonPressed != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onButtonPressed,
+                  style: WebParityTheme.primaryButtonStyle,
+                  child: Text(buttonText!),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

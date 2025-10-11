@@ -62,6 +62,34 @@ class RepostPost extends SocialEvent {
   List<Object> get props => [postId];
 }
 
+class ToggleLikePost extends SocialEvent {
+  final String postId;
+
+  const ToggleLikePost({required this.postId});
+
+  @override
+  List<Object> get props => [postId];
+}
+
+class ReportPost extends SocialEvent {
+  final String postId;
+
+  const ReportPost({required this.postId});
+
+  @override
+  List<Object> get props => [postId];
+}
+
+class ModerateContent extends SocialEvent {
+  final String itemId;
+  final String action;
+
+  const ModerateContent({required this.itemId, required this.action});
+
+  @override
+  List<Object> get props => [itemId, action];
+}
+
 class LoadTrendingPosts extends SocialEvent {}
 
 // States
@@ -121,6 +149,9 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
     on<UnlikePost>(_onUnlikePost);
     on<AddComment>(_onAddComment);
     on<RepostPost>(_onRepostPost);
+    on<ToggleLikePost>(_onToggleLikePost);
+    on<ReportPost>(_onReportPost);
+    on<ModerateContent>(_onModerateContent);
     on<LoadTrendingPosts>(_onLoadTrendingPosts);
   }
 
@@ -214,6 +245,42 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
     }
   }
 
+  Future<void> _onToggleLikePost(
+    ToggleLikePost event,
+    Emitter<SocialState> emit,
+  ) async {
+    try {
+      await socialRepository.toggleLikePost(event.postId);
+      add(LoadSocialData());
+    } catch (e) {
+      emit(SocialError(e.toString()));
+    }
+  }
+
+  Future<void> _onReportPost(
+    ReportPost event,
+    Emitter<SocialState> emit,
+  ) async {
+    try {
+      await socialRepository.reportPost(event.postId);
+      add(LoadSocialData());
+    } catch (e) {
+      emit(SocialError(e.toString()));
+    }
+  }
+
+  Future<void> _onModerateContent(
+    ModerateContent event,
+    Emitter<SocialState> emit,
+  ) async {
+    try {
+      await socialRepository.moderateContent(event.itemId, event.action);
+      add(LoadSocialData());
+    } catch (e) {
+      emit(SocialError(e.toString()));
+    }
+  }
+
   Future<void> _onLoadTrendingPosts(
     LoadTrendingPosts event,
     Emitter<SocialState> emit,
@@ -222,7 +289,7 @@ class SocialBloc extends Bloc<SocialEvent, SocialState> {
     try {
       // Load trending posts
       final posts = await socialRepository.getTrendingPosts();
-      
+
       // For now, we'll just update the posts in the existing state
       // In a real implementation, you might want a separate state for trending posts
       if (state is SocialLoaded) {

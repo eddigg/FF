@@ -15,6 +15,8 @@ class PerformanceMetricsModel extends Equatable {
   final int avgBlockSize;
   final int gasPrice;
   final int contractCount;
+  // Add metrics field as expected by UI
+  final List<PerformanceMetricsModel> metrics;
 
   const PerformanceMetricsModel({
     required this.tps,
@@ -30,7 +32,13 @@ class PerformanceMetricsModel extends Equatable {
     required this.avgBlockSize,
     required this.gasPrice,
     required this.contractCount,
+    this.metrics = const [],
   });
+
+  // Computed properties for UI compatibility
+  String get label => 'TPS'; // Default label
+  String get value => tps.toString(); // Use TPS as default value
+  String get unit => 'tx/s'; // Default unit
 
   @override
   List<Object> get props => [
@@ -47,6 +55,7 @@ class PerformanceMetricsModel extends Equatable {
         avgBlockSize,
         gasPrice,
         contractCount,
+        metrics,
       ];
 
   factory PerformanceMetricsModel.fromJson(Map<String, dynamic> json) {

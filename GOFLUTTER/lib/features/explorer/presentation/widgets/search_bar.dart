@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/explorer_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
 import '../../../../shared/widgets/common_widgets.dart';
-import '../../../../shared/widgets/custom_widgets.dart';
+// import '../../../../core/widgets/app_widgets.dart';
 
 class ExplorerSearchBar extends StatefulWidget {
   const ExplorerSearchBar({Key? key}) : super(key: key);
@@ -18,7 +17,7 @@ class _ExplorerSearchBarState extends State<ExplorerSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return EnhancedGlassCard(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -61,22 +60,36 @@ class _ExplorerSearchBarState extends State<ExplorerSearchBar> {
               style: AppTextStyles.body1,
               decoration: InputDecoration(
                 hintText: _getHintText(),
-                hintStyle: AppTextStyles.body1.copyWith(color: AppColors.textMuted),
+                hintStyle: AppTextStyles.body1.copyWith(
+                  color: AppColors.textTertiary,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
+                  borderSide: const BorderSide(
+                    color: AppColors.border,
+                    width: 2,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.border, width: 2),
+                  borderSide: const BorderSide(
+                    color: AppColors.border,
+                    width: 2,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 2,
+                  ),
                 ),
                 filled: true,
-                fillColor: AppColors.surface,
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                fillColor: AppColors.card,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
               ),
               onSubmitted: (value) {
                 _performSearch(context);
@@ -87,27 +100,27 @@ class _ExplorerSearchBarState extends State<ExplorerSearchBar> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 GradientButton(
-                  text: 'Search',
+                  child: const Text('Search'),
                   onPressed: () {
                     _performSearch(context);
                   },
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 GradientButton(
-                  text: 'Clear',
+                  child: const Text('Clear'),
                   onPressed: () {
                     _textController.clear();
                     context.read<ExplorerBloc>().add(LoadRecentBlocks());
                   },
-                  gradient: AppColors.warningGradient,
+                  colors: AppColors.secondaryGradient,
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 GradientButton(
-                  text: 'Refresh',
+                  child: const Text('Refresh'),
                   onPressed: () {
                     context.read<ExplorerBloc>().add(RefreshData());
                   },
-                  gradient: AppColors.infoGradient,
+                  colors: AppColors.primaryGradient,
                 ),
               ],
             ),

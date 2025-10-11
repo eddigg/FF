@@ -1,37 +1,42 @@
+
 import 'package:flutter/material.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/health_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class PerformanceTrendsSection extends StatelessWidget {
-  const PerformanceTrendsSection({Key? key}) : super(key: key);
+  const PerformanceTrendsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Performance Trends', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
+            Text('📈 Performance Trends', style: WebParityTheme.panelTitleStyle),
+            const SizedBox(height: 12),
             BlocBuilder<HealthBloc, HealthState>(
               builder: (context, state) {
-                if (state is HealthLoaded) {
-                  return Column(
-                    children: [
-                      _buildTrendItem('📈 TPS Trend', 'TPS Trend', state.performanceTrends.tpsTrend),
-                      _buildTrendItem('💾 Memory Trend', 'Memory Trend', state.performanceTrends.memoryTrend),
-                      _buildTrendItem('⚡ CPU Trend', 'CPU Trend', state.performanceTrends.cpuTrend),
-                    ],
-                  );
-                } else if (state is HealthLoading) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return const Text('Error loading performance trends');
-                }
+                return Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Performance Chart Placeholder\n(📈📉📊)',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                );
               },
             ),
           ],
@@ -39,43 +44,47 @@ class PerformanceTrendsSection extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTrendItem(String icon, String title, String value) {
-    Color valueColor = AppColors.success;
-    if (value.toLowerCase().contains('decreasing')) {
-      valueColor = AppColors.error;
-    } else if (value.toLowerCase().contains('stable')) {
-      valueColor = AppColors.info;
+class _TrendCard extends StatelessWidget {
+  final String icon;
+  final String label;
+  final String value;
+
+  const _TrendCard({required this.icon, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    Color valueBgColor;
+    Color valueTextColor;
+    if (value == 'increasing') {
+      valueBgColor = const Color(0xFFD4EDDA);
+      valueTextColor = const Color(0xFF155724);
+    } else if (value == 'decreasing') {
+      valueBgColor = const Color(0xFFF8D7DA);
+      valueTextColor = const Color(0xFF721C24);
+    } else {
+      valueBgColor = const Color(0xFFD1ECF1);
+      valueTextColor = const Color(0xFF0C5460);
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.border),
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: const Color(0xFFE9ECEF)),
       ),
       child: Row(
         children: [
-          Text(icon, style: AppTextStyles.body1),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(title, style: AppTextStyles.body2),
-          ),
+          Text(icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
-            decoration: BoxDecoration(
-              color: valueColor.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              value,
-              style: AppTextStyles.caption.copyWith(
-                color: valueColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(color: valueBgColor, borderRadius: BorderRadius.circular(12)),
+            child: Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: valueTextColor)),
           ),
         ],
       ),

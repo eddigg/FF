@@ -1,73 +1,58 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../themes/web_gradients.dart';
-import '../widgets/web_background_painter.dart';
-import '../../core/navigation/navigation_state_manager.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_colors.dart';
 
-/// WebScaffold widget for consistent page structure across all screens
 class WebScaffold extends StatelessWidget {
-  final Widget child;
+  final Widget body;
   final String title;
+  final PreferredSizeWidget? appBar;
+  final Widget? drawer;
+  final Widget? floatingActionButton;
+  final Color? backgroundColor;
   final bool showBackButton;
-  final List<Widget>? actions;
-  final PreferredSizeWidget? bottom;
 
   const WebScaffold({
-    Key? key,
-    required this.child,
-    this.title = 'ATLAS B.C.',
-    this.showBackButton = true,
-    this.actions,
-    this.bottom,
-  }) : super(key: key);
+    super.key,
+    required this.body,
+    this.title = 'ATLAS Blockchain',
+    this.appBar,
+    this.drawer,
+    this.floatingActionButton,
+    this.backgroundColor,
+    this.showBackButton = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: showBackButton
-            ? Consumer<NavigationStateManager>(
-                builder: (context, navManager, child) {
-                  return IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      // Try to navigate back using history, fallback to dashboard
-                      final previousRoute = navManager.navigateBack();
-                      // Check if we're already at the previous route to avoid infinite loops
-                      final currentLocation = GoRouterState.of(context).uri.toString();
-                      if (previousRoute != currentLocation) {
-                        context.go(previousRoute);
-                      } else {
-                        // If we can't go back, go to dashboard
-                        context.go('/dashboard');
-                      }
-                    },
-                  );
-                },
-              )
-            : null,
-        actions: actions,
-        bottom: bottom,
-      ),
+      appBar:
+          appBar ??
+          AppBar(
+            title: Text(title),
+            backgroundColor: const Color(0xFF667EEA),
+            foregroundColor: Colors.white,
+            automaticallyImplyLeading: showBackButton,
+          ),
+      drawer: drawer,
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
-          gradient: WebGradients.backgroundMain,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [WebColors.background, const Color(0xFF0D0D15)],
+          ),
         ),
-        child: Stack(
-          children: [
-            // Background radial gradients matching web CSS
-            CustomPaint(
-              size: MediaQuery.of(context).size,
-              painter: WebBackgroundPainter(),
-            ),
-            child,
-          ],
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(WebParityTheme.containerPadding),
+            child: body,
+          ),
         ),
       ),
+      floatingActionButton: floatingActionButton,
+      backgroundColor: backgroundColor,
     );
   }
 }

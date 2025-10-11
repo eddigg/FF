@@ -18,4 +18,5 @@ abstract class IdentityRepository {
   Future<UserProfileModel> updateSocialLinks(Map<String, String> socialLinks);
   Future<KycStatusModel> submitKYC(String address, Map<String, dynamic> kycData);
   Future<KycStatusModel> checkKYCStatus(String address);
+  Future<PrivacySettingsModel> updatePrivacySetting(String setting, dynamic value);
 }

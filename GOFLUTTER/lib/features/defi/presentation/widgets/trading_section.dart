@@ -1,162 +1,154 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/defi_bloc.dart';
-import '../../data/models/trading_pair_model.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart'; // Use stub BLoC instead
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class TradingSection extends StatelessWidget {
-  const TradingSection({Key? key}) : super(key: key);
+  const TradingSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('DEX Trading', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<DeFiBloc, DeFiState>(
-              builder: (context, state) {
-                if (state is DeFiLoaded) {
-                  return Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('📈 DEX Trading', style: WebParityTheme.panelTitleStyle),
+        const SizedBox(height: 20),
+        BlocBuilder<DeFiBloc, DeFiState>(
+          builder: (context, state) {
+            // Since we're using stub BLoC, we'll show mock data
+            return Column(
+              children: [
+                glass_card.GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Trading pairs
-                      _buildTradingPairsSection(context, state.tradingPairs),
-                      const SizedBox(height: AppSpacing.md),
-                      // Quick trade form
-                      _buildQuickTradeForm(context),
+                      Text('Available Trading Pairs', style: WebParityTheme.cardTitleStyle),
+                      const SizedBox(height: 15),
+                      ..._mockTradingPairs.map<Widget>((pair) => _TradingPairItem(pair: pair)),
                     ],
-                  );
-                } else if (state is DeFiLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  return const Center(child: Text('Error loading trading pairs'));
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTradingPairsSection(BuildContext context, List<TradingPairModel> tradingPairs) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Available Trading Pairs', style: AppTextStyles.h5),
-            const SizedBox(height: AppSpacing.md),
-            Column(
-              children: tradingPairs.map((pair) => _buildTradingPairItem(context, pair)).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTradingPairItem(BuildContext context, TradingPairModel pair) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            pair.symbol,
-            style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '\$${pair.price.toStringAsFixed(2)}',
-                style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                '${pair.change >= 0 ? '+' : ''}${pair.change.toStringAsFixed(2)}%',
-                style: AppTextStyles.caption.copyWith(
-                  color: pair.change >= 0 ? AppColors.success : AppColors.error,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                glass_card.GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Quick Trade', style: WebParityTheme.cardTitleStyle),
+                      const SizedBox(height: 15),
+                      _buildTradeForm(),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  static final List<Map<String, dynamic>> _mockTradingPairs = [
+    {
+      'symbol': 'ATLAS/USDC',
+      'price': 20.0,
+      'change': 2.5,
+    },
+    {
+      'symbol': 'ETH/USDC',
+      'price': 2920.50,
+      'change': -1.2,
+    },
+    {
+      'symbol': 'BTC/USDC',
+      'price': 36000.0,
+      'change': 0.8,
+    },
+    {
+      'symbol': 'ATLAS/ETH',
+      'price': 0.0068,
+      'change': 3.7,
+    },
+  ];
+
+  Widget _buildTradeForm() {
+    return Column(
+      children: [
+        _buildDropdownField(label: 'From Token', options: const ['ATLAS', 'ETH', 'USDC'], selected: 'ATLAS'),
+        _buildTextField(label: 'Amount', placeholder: '0.0', isNumeric: true),
+        _buildDropdownField(label: 'To Token', options: const ['USDC', 'ATLAS', 'ETH'], selected: 'USDC'),
+        const SizedBox(height: 15),
+        SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () {}, style: WebParityTheme.primaryButtonStyle, child: const Text('Trade'))),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({required String label, required List<String> options, required String selected}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
+          const SizedBox(height: 5),
+          DropdownButtonFormField<String>(
+            initialValue: selected,
+            items: options.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+            onChanged: (value) {},
+            decoration: WebParityTheme.inputDecoration(''),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickTradeForm(BuildContext context) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Quick Trade', style: AppTextStyles.h5),
-            const SizedBox(height: AppSpacing.md),
-            // From Token
-            const Text('From Token', style: AppTextStyles.caption),
-            const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+  Widget _buildTextField({required String label, String placeholder = '', bool isNumeric = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
+          const SizedBox(height: 5),
+          TextFormField(
+            keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+            decoration: WebParityTheme.inputDecoration(placeholder),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TradingPairItem extends StatelessWidget {
+  final Map<String, dynamic> pair;
+
+  const _TradingPairItem({required this.pair});
+
+  @override
+  Widget build(BuildContext context) {
+    final double change = pair['change'] as double;
+    final isNegativeChange = change < 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 15),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(pair['symbol'] as String, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2D3748))),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('\$${(pair['price'] as double).toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF48BB78), fontWeight: FontWeight.w600)),
+              Text(
+                '${isNegativeChange ? '' : '+'}${change.toStringAsFixed(2)}%',
+                style: TextStyle(fontSize: 14, color: isNegativeChange ? Colors.red[600] : const Color(0xFF48BB78)),
               ),
-              items: const [
-                DropdownMenuItem(value: 'ATLAS', child: Text('ATLAS')),
-                DropdownMenuItem(value: 'ETH', child: Text('ETH')),
-                DropdownMenuItem(value: 'USDC', child: Text('USDC')),
-              ],
-              onChanged: (value) {},
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // Amount
-            const Text('Amount', style: AppTextStyles.caption),
-            const SizedBox(height: AppSpacing.xs),
-            TextFormField(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: '0.0',
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // To Token
-            const Text('To Token', style: AppTextStyles.caption),
-            const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'USDC', child: Text('USDC')),
-                DropdownMenuItem(value: 'ATLAS', child: Text('ATLAS')),
-                DropdownMenuItem(value: 'ETH', child: Text('ETH')),
-              ],
-              onChanged: (value) {},
-            ),
-            const SizedBox(height: AppSpacing.md),
-            GradientButton(
-              text: 'Trade',
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Trade executed successfully!')),
-                );
-              },
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
     );
   }

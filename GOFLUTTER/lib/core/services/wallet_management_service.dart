@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:pointycastle/export.dart' as pc;
 import 'package:hex/hex.dart';
 import '../crypto/crypto_service.dart';
 import '../crypto/secure_storage_service.dart';
 import '../utils/logger.dart';
+import 'package:pinenacl/ed25519.dart';
 
 /// Custom exception for wallet management operations
 class WalletManagementException implements Exception {
@@ -19,15 +19,17 @@ class WalletManagementException implements Exception {
 /// Service for managing wallet operations, ported from JavaScript functionality
 class WalletManagementService {
   final SecureStorageService _secureStorage;
-  pc.AsymmetricKeyPair? _wallet;
+  final CryptoService _cryptoService;
+  SigningKey? _signingKey;
   
-  WalletManagementService(this._secureStorage);
+  WalletManagementService(this._secureStorage, this._cryptoService);
   
   /// Generates a new wallet with ECDSA key pair
   Future<String> generateWallet() async {
     try {
       // Generate a new ECDSA key pair
-      _wallet = CryptoService.generateKeyPair();
+      final keyPair = await _cryptoService.generateKeyPair();
+      _signingKey = _cryptoService.hexToPrivateKey(keyPair['privateKey']!);
       
       // Save the wallet
       await _saveWallet();
@@ -45,15 +47,15 @@ class WalletManagementService {
   
   /// Saves the current wallet to secure storage
   Future<void> _saveWallet() async {
-    if (_wallet == null) return;
+    if (_signingKey == null) return;
     
     try {
       // Convert private key to hex
-      final privateKeyHex = CryptoService.privateKeyToHex(_wallet!.privateKey as pc.ECPrivateKey);
+      final privateKeyHex = _cryptoService.privateKeyToHex(_signingKey!);
       
       // Get public key and derive address
-      final publicKey = _wallet!.publicKey as pc.ECPublicKey;
-      final address = CryptoService.publicKeyToAddress(publicKey);
+      final publicKey = _signingKey!.verifyKey;
+      final address = _cryptoService.publicKeyToAddress(publicKey);
       
       // Store in secure storage
       await _secureStorage.write('wallet_private_key', privateKeyHex);
@@ -79,13 +81,7 @@ class WalletManagementService {
       }
       
       // Convert hex to private key
-      final privateKey = CryptoService.hexToPrivateKey(privateKeyHex);
-      
-      // Derive public key
-      final publicKey = CryptoService.derivePublicKey(privateKey);
-      
-      // Set wallet
-      _wallet = pc.AsymmetricKeyPair(publicKey, privateKey);
+      _signingKey = _cryptoService.hexToPrivateKey(privateKeyHex);
       
       AppLogger.log('Wallet loaded successfully');
       return true;
@@ -97,18 +93,18 @@ class WalletManagementService {
   
   /// Gets the wallet address
   String _getWalletAddress() {
-    if (_wallet == null) {
+    if (_signingKey == null) {
       throw const WalletManagementException('Wallet not loaded');
     }
     
-    final publicKey = _wallet!.publicKey as pc.ECPublicKey;
-    return CryptoService.publicKeyToAddress(publicKey);
+    final publicKey = _signingKey!.verifyKey;
+    return _cryptoService.publicKeyToAddress(publicKey);
   }
   
   /// Gets the wallet address or a default value if not loaded
   Future<String> getWalletAddress() async {
     try {
-      if (_wallet == null) {
+      if (_signingKey == null) {
         // Try to load wallet first
         final loaded = await loadWallet();
         if (!loaded) {
@@ -125,7 +121,7 @@ class WalletManagementService {
   
   /// Signs a transaction
   Future<String> signTransaction(Map<String, dynamic> tx) async {
-    if (_wallet == null) {
+    if (_signingKey == null) {
       // Try to load wallet
       final loaded = await loadWallet();
       if (!loaded) {
@@ -136,16 +132,9 @@ class WalletManagementService {
     try {
       // Create transaction data string
       final dataString = '${tx['Sender']}${tx['Recipient']}${tx['Amount']}${tx['Fee'] ?? 0}${tx['Timestamp']}${tx['Nonce']}${tx['Data'] ?? ''}';
-      final dataBytes = Uint8List.fromList(utf8.encode(dataString));
       
       // Sign the transaction
-      final signatureBytes = CryptoService.signMessage(
-        dataBytes,
-        _wallet!.privateKey as pc.ECPrivateKey,
-      );
-      
-      // Convert signature to hex
-      final signature = HEX.encode(signatureBytes);
+      final signature = await _cryptoService.signMessage(dataString, _cryptoService.privateKeyToHex(_signingKey!));
       
       AppLogger.log('Transaction signed successfully. Signature length: ${signature.length}');
       return signature;
@@ -175,23 +164,15 @@ class WalletManagementService {
   Future<void> importWallet(String privateKeyHex) async {
     try {
       // Validate private key format
-      if (!RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(privateKeyHex)) {
+      if (!RegExp(r'^[0-9a-fA-F]{64}).hasMatch(privateKeyHex)) {
         throw const WalletManagementException('Invalid private key format');
       }
       
       // Convert hex to private key
-      final privateKey = CryptoService.hexToPrivateKey(privateKeyHex);
-      
-      // Derive public key and address
-      final publicKey = CryptoService.derivePublicKey(privateKey);
-      final address = CryptoService.publicKeyToAddress(publicKey);
-      
-      // Set wallet
-      _wallet = pc.AsymmetricKeyPair(publicKey, privateKey);
+      _signingKey = _cryptoService.hexToPrivateKey(privateKeyHex);
       
       // Save to secure storage
-      await _secureStorage.write('wallet_private_key', privateKeyHex);
-      await _secureStorage.write('wallet_address', address);
+      await _saveWallet();
       
       AppLogger.log('Wallet imported successfully');
     } catch (e) {
@@ -205,7 +186,7 @@ class WalletManagementService {
     try {
       await _secureStorage.delete('wallet_private_key');
       await _secureStorage.delete('wallet_address');
-      _wallet = null;
+      _signingKey = null;
       
       AppLogger.log('Wallet cleared successfully');
     } catch (e) {

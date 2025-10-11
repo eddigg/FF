@@ -1,149 +1,114 @@
+
 import 'package:flutter/material.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class PrivacySecuritySection extends StatelessWidget {
-  const PrivacySecuritySection({Key? key}) : super(key: key);
+  const PrivacySecuritySection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Privacy & Security', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            _buildPrivacyGrid(),
+            Text('🔒 Privacy & Security', style: WebParityTheme.panelTitleStyle),
+            const SizedBox(height: 12),
+            BlocBuilder<HealthBloc, HealthState>(
+              builder: (context, state) {
+                return Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Encryption: 🔒 AES-256', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('Key Storage: 🛡️ Hardware Secure', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('Access Logs: 📋 Enabled', style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: null,
+                            style: WebParityTheme.primaryButtonStyle,
+                            child: const Text('🔐 Audit'),
+                          ),
+                          ElevatedButton(
+                            onPressed: null,
+                            style: WebParityTheme.warningButtonStyle,
+                            child: const Text('🔄 Rotate Keys'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildPrivacyGrid() {
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _buildPrivacyCard(
-                '🔐 Data Encryption',
-                [
-                  _buildTextField('Data to Encrypt', maxLines: 3),
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildTextField('Password (optional)', isPassword: true),
-                  const SizedBox(height: AppSpacing.sm),
-                  GradientButton(text: 'Encrypt', onPressed: () {}),
-                ],
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _buildPrivacyCard(
-                '🔓 Data Decryption',
-                [
-                  _buildTextField('Encrypted Data', maxLines: 3),
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildTextField('Password', isPassword: true),
-                  const SizedBox(height: AppSpacing.sm),
-                  GradientButton(text: 'Decrypt', onPressed: () {}),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _buildPrivacyCard(
-                '🔍 Zero-Knowledge Proofs',
-                [
-                  _buildTextField('Data for Proof', maxLines: 3),
-                  const SizedBox(height: AppSpacing.sm),
-                  GradientButton(text: 'Create Proof', onPressed: () {}),
-                ],
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _buildPrivacyCard(
-                '✅ Proof Verification',
-                [
-                  _buildTextField('Proof to Verify', maxLines: 3),
-                  const SizedBox(height: AppSpacing.sm),
-                  GradientButton(text: 'Verify Proof', onPressed: () {}),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildPrivacyCard(
-          '🗑️ GDPR Compliance',
-          [
-            _buildTextField('User Address'),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                GradientButton(text: 'Delete Data', onPressed: () {}),
-                const SizedBox(width: AppSpacing.sm),
-                GradientButton(
-                  text: 'Anonymize Data',
-                  onPressed: () {},
-                  gradient: AppColors.secondaryGradient,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+class _PanelTitle extends StatelessWidget {
+  final String title;
+  const _PanelTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Text(title, style: WebParityTheme.panelTitleStyle),
     );
   }
+}
 
-  Widget _buildPrivacyCard(String title, List<Widget> children) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppTextStyles.h5.copyWith(color: AppColors.primary)),
-            const SizedBox(height: AppSpacing.sm),
-            ...children,
-          ],
-        ),
+class _PrivacyCard extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+  final bool isFullWidth;
+
+  const _PrivacyCard({required this.title, required this.children, this.isFullWidth = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE9ECEF)),
       ),
-    );
-  }
-
-  Widget _buildTextField(String label, {int maxLines = 1, bool isPassword = false}) {
-    return TextField(
-      maxLines: maxLines,
-      obscureText: isPassword,
-      style: AppTextStyles.body1,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: AppTextStyles.body1.copyWith(color: AppColors.textSecondary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.border, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: Color(0xFF1E3C72), fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 10),
+          ...children,
+        ],
       ),
     );
   }

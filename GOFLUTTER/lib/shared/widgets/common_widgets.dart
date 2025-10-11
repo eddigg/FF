@@ -1,490 +1,156 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:ui'; // For ImageFilter
-import '../themes/web_parity_theme.dart';
 import '../themes/web_colors.dart';
-import '../themes/web_typography.dart';
 import '../themes/web_gradients.dart';
-import '../themes/web_shadows.dart';
 
-/// A glass-like card widget with consistent styling
-class GlassCard extends StatefulWidget {
-  final Widget child;
-  final EdgeInsets? margin;
-  final double? width;
-  final double? height;
+// Export other shared widgets
+export 'glass_card.dart';
+export 'web_scaffold.dart';
+export 'web_button.dart';
+export 'status_indicator.dart';
+export 'loading_indicator.dart';
+export 'breadcrumb_navigation.dart';
+export 'responsive_grid.dart';
 
-  const GlassCard({
-    Key? key,
-    required this.child,
-    this.margin,
-    this.width,
-    this.height,
-  }) : super(key: key);
+class AppColors {
+  static const Color primary = WebColors.primary;
+  static const Color secondary = WebColors.secondary;
+  static const Color surface = WebColors.surface;
+  static const Color background = WebColors.background;
+  static const Color backgroundMid = WebColors.backgroundMid;
+  static const Color border = WebColors.border;
+  static const Color textPrimary = WebColors.textPrimary;
+  static const Color textSecondary = WebColors.textSecondary;
+  static const Color textMuted = WebColors.textMuted;
+  static const Color success = WebColors.success;
+  static const Color error = WebColors.error;
+  static const Color warning = WebColors.warning;
+  static const Color info = WebColors.info;
+  static const Color cardBackground = Color(0xFF252536);
+  static const Color cardGradient = Color(0xFF2D2D40);
+  static const Color backgroundGradient = Color(0xFF1A1A2E);
+  static const Color surfaceOpaque = WebColors.surfaceOpaque;
+  static const Color textTertiary = Color(0xFF7E7E98);
+  static const Color card = WebColors.surface;
 
-  @override
-  State<GlassCard> createState() => _GlassCardState();
+  // Add gradient lists for compatibility
+  static const List<Color> primaryGradient = [
+    Color(0xFF667eea),
+    Color(0xFF764ba2),
+  ];
+  static const List<Color> secondaryGradient = [
+    Color(0xFF11998e),
+    Color(0xFF38ef7d),
+  ];
 }
 
-class _GlassCardState extends State<GlassCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+class AppTextStyles {
+  static const TextStyle h1 = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+    height: 1.2,
+  );
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: WebParityTheme.transitionFast, // Use web parity theme
-      vsync: this,
-    );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.98,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: WebParityTheme.easeInOut, // Use web parity theme
-    ));
-  }
+  static const TextStyle h2 = TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textPrimary,
+    height: 1.25,
+  );
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  static const TextStyle h3 = TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.3,
+  );
 
-  void _onTapDown(TapDownDetails details) {
-    _controller.forward();
-  }
+  static const TextStyle h4 = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.35,
+  );
 
-  void _onTapUp(TapUpDetails details) {
-    _controller.reverse();
-  }
+  static const TextStyle body1 = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+    height: 1.5,
+  );
 
-  void _onTapCancel() {
-    _controller.reverse();
-  }
+  static const TextStyle body2 = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+    height: 1.5,
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Container(
-              width: widget.width,
-              height: widget.height,
-              margin: widget.margin,
-              decoration: BoxDecoration(
-                color: WebColors.surfaceOpaque, // Use web parity colors
-                borderRadius: BorderRadius.circular(WebParityTheme.radiusXl), // Use web parity theme
-                boxShadow: WebShadows.glassEffect, // Use web parity shadows
-                border: Border.all(
-                  color: WebColors.borderCard, // Use web parity colors
-                  width: 1,
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(WebParityTheme.radiusXl), // Use web parity theme
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: widget.child,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+  static const TextStyle caption = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textSecondary,
+    height: 1.5,
+  );
+
+  static const TextStyle address = TextStyle(
+    fontFamily: 'monospace',
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.textPrimary,
+  );
 }
 
-/// Gradient button widget matching the web frontend button styles
-class GradientButton extends StatefulWidget {
-  final String text;
+class AppSpacing {
+  static const double xs = 4.0;
+  static const double sm = 8.0;
+  static const double md = 16.0;
+  static const double lg = 24.0;
+  static const double xl = 32.0;
+  static const double xxl = 48.0;
+  static const double containerPadding = 20.0;
+  static const double cardPadding = 16.0;
+  static const double radiusSm = 8.0;
+  static const double radiusMd = 12.0;
+  static const double radiusLg = 16.0;
+  static const double radiusXl = 20.0;
+}
+
+// Add missing gradient for compatibility
+class GradientButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  final LinearGradient? gradient;
-  final EdgeInsets? padding;
-  final double? width;
-  final double? height;
-  final BorderRadius? borderRadius;
-  final TextStyle? textStyle;
-  final IconData? icon;
-  final bool isLoading;
-  final ButtonSize size; // New parameter for button size
+  final Widget child;
+  final List<Color> colors;
+  final EdgeInsets padding;
+  final BorderRadius borderRadius;
 
   const GradientButton({
-    Key? key,
-    required this.text,
-    this.onPressed,
-    this.gradient,
-    this.padding,
-    this.width,
-    this.height,
-    this.borderRadius,
-    this.textStyle,
-    this.icon,
-    this.isLoading = false,
-    this.size = ButtonSize.normal, // Default to normal size
-  }) : super(key: key);
-
-  @override
-  State<GradientButton> createState() => _GradientButtonState();
-}
-
-// Enum for button sizes
-enum ButtonSize {
-  small,
-  normal,
-  large,
-}
-
-class _GradientButtonState extends State<GradientButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _translateAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: WebParityTheme.transitionFast, // Use web parity theme
-      vsync: this,
-    );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.98,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: WebParityTheme.easeInOut, // Use web parity theme
-    ));
-    
-    _translateAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.size == ButtonSize.small ? -1.0 : -2.0, // Smaller movement for small buttons
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: WebParityTheme.easeInOut, // Use web parity theme
-    ));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    _controller.forward();
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    _controller.reverse();
-  }
-
-  void _onTapCancel() {
-    _controller.reverse();
-  }
-
-  // Helper method to get padding based on button size
-  EdgeInsets _getPadding() {
-    if (widget.padding != null) return widget.padding!;
-    
-    switch (widget.size) {
-      case ButtonSize.small:
-        return const EdgeInsets.symmetric(
-          horizontal: WebParityTheme.spacingSm,
-          vertical: WebParityTheme.spacingXs,
-        );
-      case ButtonSize.large:
-        return const EdgeInsets.symmetric(
-          horizontal: WebParityTheme.spacingXl,
-          vertical: WebParityTheme.spacingMd,
-        );
-      case ButtonSize.normal:
-        return const EdgeInsets.symmetric(
-          horizontal: WebParityTheme.spacingMd,
-          vertical: WebParityTheme.spacingSm,
-        );
-    }
-  }
-
-  // Helper method to get border radius based on button size
-  BorderRadius _getBorderRadius() {
-    if (widget.borderRadius != null) return widget.borderRadius!;
-    
-    switch (widget.size) {
-      case ButtonSize.small:
-        return BorderRadius.circular(WebParityTheme.radiusXs); // Use web parity theme
-      case ButtonSize.large:
-        return BorderRadius.circular(WebParityTheme.radiusMd); // Use web parity theme
-      case ButtonSize.normal:
-        return BorderRadius.circular(WebParityTheme.radiusSm); // Use web parity theme
-    }
-  }
-
-  // Helper method to get font size based on button size
-  double _getFontSize() {
-    switch (widget.size) {
-      case ButtonSize.small:
-        return 12.8; // 0.8rem
-      case ButtonSize.large:
-        return 16.0; // 1rem
-      case ButtonSize.normal:
-        return 14.4; // 0.9rem
-    }
-  }
-
-  // Helper method to get height based on button size
-  double _getHeight() {
-    if (widget.height != null) return widget.height!;
-    
-    switch (widget.size) {
-      case ButtonSize.small:
-        return 32;
-      case ButtonSize.large:
-        return 56;
-      case ButtonSize.normal:
-        return 40;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: widget.onPressed != null ? _onTapDown : null,
-      onTapUp: widget.onPressed != null ? _onTapUp : null,
-      onTapCancel: _onTapCancel,
-      onTap: widget.onPressed != null && !widget.isLoading 
-          ? () {
-              HapticFeedback.lightImpact();
-              widget.onPressed!();
-            }
-          : null,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Transform.translate(
-              offset: Offset(0, _translateAnimation.value),
-              child: Container(
-                width: widget.width,
-                height: _getHeight(),
-                padding: _getPadding(),
-                decoration: BoxDecoration(
-                  gradient: widget.onPressed != null 
-                      ? (widget.gradient ?? WebGradients.buttonPrimary) // Use web parity gradients
-                      : const LinearGradient(
-                          colors: [WebColors.textMuted, WebColors.textMuted], // Use web parity colors
-                        ),
-                  borderRadius: _getBorderRadius(),
-                  boxShadow: widget.onPressed != null ? [
-                    BoxShadow(
-                      color: (widget.gradient?.colors.first ?? WebColors.primary).withValues(
-                        alpha: widget.size == ButtonSize.small ? 0.2 : 0.4
-                      ),
-                      offset: Offset(0, widget.size == ButtonSize.small ? 3 : 5),
-                      blurRadius: widget.size == ButtonSize.small ? 8 : 15,
-                      spreadRadius: 0,
-                    ),
-                  ] : null,
-                ),
-                child: Center(
-                  child: widget.isLoading
-                      ? SizedBox(
-                          width: widget.size == ButtonSize.small ? 16 : 20,
-                          height: widget.size == ButtonSize.small ? 16 : 20,
-                          child: CircularProgressIndicator(
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                            strokeWidth: widget.size == ButtonSize.small ? 1.5 : 2,
-                          ),
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (widget.icon != null) ...[
-                              Icon(
-                                widget.icon,
-                                color: Colors.white,
-                                size: widget.size == ButtonSize.small ? 16 : 18,
-                              ),
-                              SizedBox(width: widget.size == ButtonSize.small ? 
-                                WebParityTheme.spacingXs : WebParityTheme.spacingSm), // Use web parity theme
-                            ],
-                            Text(
-                              widget.text,
-                              style: widget.textStyle ?? 
-                                  WebTypography.button.copyWith( // Use web parity typography
-                                    color: Colors.white,
-                                    fontSize: _getFontSize(),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// Status message widget for showing success/error messages
-class StatusMessage extends StatelessWidget {
-  final String message;
-  final StatusType type;
-  final bool isVisible;
-  final VoidCallback? onDismiss;
-
-  const StatusMessage({
-    Key? key,
-    required this.message,
-    required this.type,
-    required this.isVisible,
-    this.onDismiss,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isVisible) return const SizedBox.shrink();
-
-    Color backgroundColor;
-    Color textColor;
-    IconData icon;
-
-    switch (type) {
-      case StatusType.success:
-        backgroundColor = WebColors.success; // Use web parity colors
-        textColor = Colors.white;
-        icon = Icons.check_circle;
-        break;
-      case StatusType.error:
-        backgroundColor = WebColors.error; // Use web parity colors
-        textColor = Colors.white;
-        icon = Icons.error;
-        break;
-      case StatusType.warning:
-        backgroundColor = WebColors.warning; // Use web parity colors
-        textColor = Colors.white;
-        icon = Icons.warning;
-        break;
-      case StatusType.info:
-        backgroundColor = WebColors.info; // Use web parity colors
-        textColor = Colors.white;
-        icon = Icons.info;
-        break;
-    }
-
-    return AnimatedOpacity(
-      opacity: isVisible ? 1.0 : 0.0,
-      duration: WebParityTheme.transitionNormal, // Use web parity theme
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(WebParityTheme.spacingMd), // Use web parity theme
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(WebParityTheme.radiusSm), // Use web parity theme
-          boxShadow: WebShadows.card, // Use web parity shadows
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: textColor, size: 20),
-            const SizedBox(width: WebParityTheme.spacingSm), // Use web parity theme
-            Expanded(
-              child: Text(
-                message,
-                style: WebTypography.body2.copyWith(color: textColor), // Use web parity typography
-              ),
-            ),
-            if (onDismiss != null)
-              GestureDetector(
-                onTap: onDismiss,
-                child: Icon(
-                  Icons.close,
-                  color: textColor,
-                  size: 20,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-enum StatusType { success, error, warning, info }
-
-/// Loading shimmer widget for skeleton screens
-class ShimmerLoading extends StatefulWidget {
-  final Widget child;
-  final bool isLoading;
-
-  const ShimmerLoading({
-    Key? key,
+    super.key,
+    required this.onPressed,
     required this.child,
-    required this.isLoading,
-  }) : super(key: key);
-
-  @override
-  State<ShimmerLoading> createState() => _ShimmerLoadingState();
-}
-
-class _ShimmerLoadingState extends State<ShimmerLoading>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+    this.colors = AppColors.primaryGradient,
+    this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isLoading) {
-      return widget.child;
-    }
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment(-1.0 + 2.0 * _controller.value, 0.0),
-              end: Alignment(-0.5 + 2.0 * _controller.value, 0.0),
-              colors: const [
-                Color(0xFFE0E0E0),
-                Color(0xFFF5F5F5),
-                Color(0xFFE0E0E0),
-              ],
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: colors),
+        borderRadius: borderRadius,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: borderRadius,
+          child: Container(
+            padding: padding,
+            child: Center(child: child),
           ),
-          child: widget.child,
-        );
-      },
+        ),
+      ),
     );
   }
 }

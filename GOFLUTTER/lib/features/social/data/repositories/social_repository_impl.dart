@@ -70,4 +70,24 @@ class SocialRepositoryImpl implements SocialRepository {
     final data = await apiClient.fetchTrendingPosts();
     return data.map((item) => PostModel.fromJson(item)).toList();
   }
+  
+  // Additional method implementations
+  @override
+  Future<void> toggleLikePost(String postId) async {
+    // Check if post is already liked, then like or unlike accordingly
+    // This is a simplified implementation
+    await apiClient.likePost(postId);
+  }
+
+  @override
+  Future<void> reportPost(String postId) async {
+    // Simplified implementation - in a real app this would call the API
+    print('Reporting post: $postId');
+  }
+
+  @override
+  Future<void> moderateContent(String itemId, String action) async {
+    // Simplified implementation - in a real app this would call the API
+    print('Moderating content: $itemId with action: $action');
+  }
 }

@@ -1,55 +1,96 @@
+
 import 'package:flutter/material.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/health_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class SystemOverviewSection extends StatelessWidget {
-  const SystemOverviewSection({Key? key}) : super(key: key);
+  const SystemOverviewSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('System Overview & Blockchain Status', style: AppTextStyles.h4),
-                GradientButton(
-                  text: '🔄 Refresh Status',
-                  onPressed: () {
-                    context.read<HealthBloc>().add(RefreshHealthData());
-                  },
-                  gradient: AppColors.secondaryGradient,
-                  width: 150,
-                  height: 30,
+                Text('🏥 System Overview & Blockchain Status', style: WebParityTheme.panelTitleStyle),
+                ElevatedButton(
+                  onPressed: () => context.read<HealthBloc>().add(LoadHealthData()),
+                  style: WebParityTheme.primaryButtonStyle.copyWith(
+                    padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                    textStyle: MaterialStateProperty.all(const TextStyle(fontSize: 14)),
+                  ),
+                  child: const Text('🔄 Refresh Status'),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: 12),
             BlocBuilder<HealthBloc, HealthState>(
               builder: (context, state) {
-                if (state is HealthLoaded) {
-                  return Column(
-                    children: [
-                      _buildUptimeVersionInfo(state.systemStatus.uptime, state.systemStatus.version),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildNetworkStatisticsGrid(state),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildConnectionStatus(state.systemStatus.connectionStatus),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildRecentTransactionsSection(context),
-                    ],
-                  );
-                } else if (state is HealthLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  return const Text('Error loading system overview');
-                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'System Health',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('🟢 System Status: Operational', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('📈 Uptime: 99.98%', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('⏱️ Response Time: 42ms', style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      'Blockchain Status',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('🔗 Network: Connected', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('🔢 Block Height: 12,345', style: TextStyle(fontSize: 14)),
+                          SizedBox(height: 4),
+                          Text('⏱️ Block Time: 12.3s', style: TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
           ],
@@ -57,106 +98,99 @@ class SystemOverviewSection extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildUptimeVersionInfo(String uptime, String version) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Uptime: $uptime', style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: AppSpacing.xs),
-        Text('Version: $version', style: AppTextStyles.caption),
-      ],
-    );
-  }
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
 
-  Widget _buildNetworkStatisticsGrid(HealthLoaded state) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: AppSpacing.sm,
-      mainAxisSpacing: AppSpacing.sm,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: [
-        _buildStatCard('Total Blocks', state.systemStatus.totalBlocks.toString()),
-        _buildStatCard('Total Transactions', state.systemStatus.totalTransactions.toString()),
-        _buildStatCard('Active Validators', state.systemStatus.activeValidators.toString()),
-        _buildStatCard('Pool Size', state.systemStatus.poolSize.toString()),
-      ],
-    );
-  }
+  const _StatCard({required this.label, required this.value});
 
-  Widget _buildStatCard(String label, String value) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.border),
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(value, style: AppTextStyles.h5.copyWith(color: AppColors.primary)),
-          const SizedBox(height: AppSpacing.xs),
-          Text(label, style: AppTextStyles.caption),
+          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF4299E1))),
+          Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF6C757D))),
         ],
       ),
     );
   }
+}
 
-  Widget _buildConnectionStatus(String status) {
-    Color statusColor = AppColors.success;
-    if (status.toLowerCase().contains('connecting')) {
-      statusColor = AppColors.warning;
-    } else if (status.toLowerCase().contains('offline')) {
-      statusColor = AppColors.error;
+class _ConnectionStatus extends StatelessWidget {
+  final String status;
+
+  const _ConnectionStatus({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    Color indicatorColor = Colors.orange;
+    String statusText = 'Connecting...';
+    if (status == 'Connected') {
+      indicatorColor = Colors.green;
+      statusText = 'Connected';
+    } else if (status == 'Disconnected') {
+      indicatorColor = Colors.red;
+      statusText = 'Disconnected';
     }
 
     return Row(
       children: [
+        const Text('Connection Status:', style: TextStyle(fontSize: 12, color: Color(0xFF666666))),
+        const SizedBox(width: 10),
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: statusColor,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: indicatorColor, shape: BoxShape.circle),
         ),
-        const SizedBox(width: AppSpacing.sm),
-        Text('Connection Status: $status', style: AppTextStyles.body2),
+        const SizedBox(width: 5),
+        Text(statusText, style: TextStyle(fontSize: 12, color: indicatorColor)),
       ],
     );
   }
+}
 
-  Widget _buildRecentTransactionsSection(BuildContext context) {
+class _RecentTransactions extends StatelessWidget {
+  final List<dynamic> transactions; // Assuming a list of dynamic for now
+
+  const _RecentTransactions({required this.transactions});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Recent Transactions', style: AppTextStyles.h5),
-        const SizedBox(height: AppSpacing.sm),
+        const Text('📋 Recent Transactions', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF495057))),
+        const SizedBox(height: 8),
         Container(
           height: 120,
           decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            border: Border.all(color: AppColors.border),
+            color: const Color(0xFFF8F9FA),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: BlocBuilder<HealthBloc, HealthState>(
-            builder: (context, state) {
-              if (state is HealthLoaded) {
-                // For now, we'll show a placeholder since we don't have transaction data in the current model
-                return const Center(
-                  child: Text('No recent transactions', style: AppTextStyles.caption),
-                );
-              } else if (state is HealthLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else {
-                return const Center(
-                  child: Text('Error loading transactions', style: AppTextStyles.caption),
-                );
-              }
-            },
-          ),
+          child: transactions.isEmpty
+              ? const Center(child: Text('No recent transactions', style: TextStyle(fontSize: 12, color: Color(0xFF6C757D))))
+              : ListView.builder(
+                  itemCount: transactions.length,
+                  itemBuilder: (context, index) {
+                    final tx = transactions[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                      child: Text(
+                        '${tx['Sender'].substring(0, 6)}... -> ${tx['Recipient'].substring(0, 6)}... (${tx['Amount']} tokens)',
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF6C757D)),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/dashboard_bloc.dart';
-import '../../../../shared/widgets/custom_widgets.dart';
+import '../../../../shared/widgets/common_widgets.dart';
 import '../../../../shared/themes/app_colors.dart';
+import '../../../../shared/themes/app_text_styles.dart';
+import '../../../../shared/themes/app_spacing.dart';
 
 class NodeMetricsCard extends StatelessWidget {
   const NodeMetricsCard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return EnhancedGlassCard(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -82,7 +84,7 @@ class NodeMetricsCard extends StatelessWidget {
   }
 
   Widget _buildMetricCard(String title, String value, String description, IconData icon) {
-    return EnhancedGlassCard(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(

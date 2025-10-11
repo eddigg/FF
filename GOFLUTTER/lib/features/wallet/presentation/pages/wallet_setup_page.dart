@@ -1,4 +1,3 @@
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -142,7 +141,8 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
   @override
   Widget build(BuildContext context) {
     return WebScaffold(
-      child: Center(
+      title: 'Wallet Setup',
+      body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 500),
           margin: const EdgeInsets.all(20),
@@ -155,17 +155,6 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  color: WebColors.textSecondary,
-                  onPressed: () {
-                    context.go('/intro'); // Assuming '/intro' is your intro route
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
               Text(
                 '🔐 Wallet Setup',
                 style: WebTypography.h1.copyWith(color: WebColors.textPrimary),
@@ -174,13 +163,13 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
               const SizedBox(height: 10),
               Text(
                 'Set up your wallet to access ATLAS B.C.',
-                style: WebTypography.subtitle.copyWith(color: WebColors.textSecondary),
+                style: WebTypography.body1.copyWith(color: WebColors.textSecondary),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
               Container(
                 decoration: BoxDecoration(
-                  color: WebColors.formBackground,
+                  color: WebColors.background,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(4),
@@ -194,7 +183,7 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
                           decoration: BoxDecoration(
                             color: _currentTab == 'create' ? WebColors.surface : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
-                            boxShadow: _currentTab == 'create' ? WebShadows.cardHover : null,
+                            boxShadow: _currentTab == 'create' ? WebShadows.card : null,
                           ),
                           child: Text(
                             'Create New',
@@ -215,7 +204,7 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
                           decoration: BoxDecoration(
                             color: _currentTab == 'import' ? WebColors.surface : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
-                            boxShadow: _currentTab == 'import' ? WebShadows.cardHover : null,
+                            boxShadow: _currentTab == 'import' ? WebShadows.card : null,
                           ),
                           child: Text(
                             'Import Existing',
@@ -255,7 +244,7 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
         Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: WebColors.formBackground,
+            color: WebColors.background,
             borderRadius: BorderRadius.circular(8),
             border: Border(left: BorderSide(color: WebColors.primary, width: 4)),
           ),
@@ -319,13 +308,13 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                      color: WebColors.surface,
+                      color: WebColors.textPrimary,
                       strokeWidth: 2,
                     ),
                   )
                 : Text(
                     '🔑 Create New Wallet',
-                    style: WebTypography.button.copyWith(color: WebColors.surface),
+                    style: WebTypography.button.copyWith(color: WebColors.textPrimary),
                   ),
           ),
         ),
@@ -340,7 +329,7 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
         Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: WebColors.formBackground,
+            color: WebColors.background,
             borderRadius: BorderRadius.circular(8),
             border: Border(left: BorderSide(color: WebColors.primary, width: 4)),
           ),
@@ -370,8 +359,8 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: _importMethod == 'file' ? WebGradients.buttonSecondary : null,
-                  color: _importMethod == 'file' ? null : WebColors.buttonSecondary,
+                  gradient: _importMethod == 'file' ? WebGradients.buttonPrimary : null,
+                  color: _importMethod == 'file' ? null : WebColors.background,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _importMethod == 'file' ? WebShadows.button : null,
                 ),
@@ -387,7 +376,7 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
                   ),
                   child: Text(
                     '📁 File',
-                    style: WebTypography.button.copyWith(color: WebColors.surface),
+                    style: WebTypography.button.copyWith(color: WebColors.textPrimary),
                   ),
                 ),
               ),
@@ -396,8 +385,8 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: _importMethod == 'key' ? WebGradients.buttonSecondary : null,
-                  color: _importMethod == 'key' ? null : WebColors.buttonSecondary,
+                  gradient: _importMethod == 'key' ? WebGradients.buttonPrimary : null,
+                  color: _importMethod == 'key' ? null : WebColors.background,
                   borderRadius: BorderRadius.circular(8),
                   boxShadow: _importMethod == 'key' ? WebShadows.button : null,
                 ),
@@ -413,7 +402,7 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
                   ),
                   child: Text(
                     '🔑 Private Key',
-                    style: WebTypography.button.copyWith(color: WebColors.surface),
+                    style: WebTypography.button.copyWith(color: WebColors.textPrimary),
                   ),
                 ),
               ),
@@ -525,13 +514,13 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
                     width: 24,
                     height: 24,
                     child: CircularProgressIndicator(
-                      color: WebColors.surface,
+                      color: WebColors.textPrimary,
                       strokeWidth: 2,
                     ),
                   )
                 : Text(
                     '📥 Import Wallet',
-                    style: WebTypography.button.copyWith(color: WebColors.surface),
+                    style: WebTypography.button.copyWith(color: WebColors.textPrimary),
                   ),
           ),
         ),
@@ -543,9 +532,9 @@ class _WalletSetupPageState extends State<WalletSetupPage> {
     if (_statusMessage == null) return const SizedBox.shrink();
 
     bool isError = _statusMessage!.contains('error') || _statusMessage!.contains('failed');
-    Color backgroundColor = isError ? WebColors.statusErrorBackground : WebColors.statusSuccessBackground;
-    Color textColor = isError ? WebColors.statusErrorText : WebColors.statusSuccessText;
-    Color borderColor = isError ? WebColors.statusErrorBorder : WebColors.statusSuccessBorder;
+    Color backgroundColor = isError ? WebColors.error.withOpacity(0.2) : WebColors.success.withOpacity(0.2);
+    Color textColor = isError ? WebColors.error : WebColors.success;
+    Color borderColor = isError ? WebColors.error.withOpacity(0.5) : WebColors.success.withOpacity(0.5);
 
     return Container(
       padding: const EdgeInsets.all(12),

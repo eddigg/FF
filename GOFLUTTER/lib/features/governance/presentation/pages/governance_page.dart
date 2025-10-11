@@ -6,14 +6,14 @@ import '../../../../shared/themes/web_parity_theme.dart';
 import '../../../../shared/widgets/web_scaffold.dart';
 
 class GovernancePage extends StatelessWidget {
-  const GovernancePage({Key? key}) : super(key: key);
+  const GovernancePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return WebScaffold(
       title: 'Governance',
       showBackButton: true,
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(WebParityTheme.containerPadding),
           child: Column(

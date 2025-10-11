@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../bloc/dashboard_bloc.dart';
-import '../../../../shared/widgets/glass_card.dart';
+import '../../../../shared/widgets/common_widgets.dart';
 import '../../../../shared/themes/web_parity_theme.dart';
 import '../../../../shared/themes/web_colors.dart';
 import '../../../../shared/themes/web_typography.dart';

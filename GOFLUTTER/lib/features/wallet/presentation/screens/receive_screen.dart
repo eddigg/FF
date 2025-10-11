@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../shared/themes/app_colors.dart';
+import '../../../../shared/themes/app_spacing.dart';
+import '../../../../shared/themes/app_text_styles.dart';
 // Use prefix to resolve ambiguity
-import '../../../../shared/widgets/glass_card.dart' as glass_card;
+import '../../../../shared/widgets/common_widgets.dart' as glass_card;
 import '../bloc/wallet_bloc.dart';
 
 /// Receive screen for displaying wallet address QR code
@@ -38,7 +40,9 @@ class ReceiveScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ShaderMask(
-          shaderCallback: (bounds) => AppColors.cardGradient.createShader(bounds),
+          shaderCallback: (bounds) => const LinearGradient(
+            colors: AppColors.primaryGradient,
+          ).createShader(bounds),
           child: Text(
             'Receive Tokens',
             style: AppTextStyles.h2.copyWith(
@@ -101,10 +105,10 @@ class ReceiveScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundLight,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     border: Border.all(
-                      color: AppColors.textMuted.withValues(alpha: 0.2),
+                      color: AppColors.textSecondary.withValues(alpha: 0.2),
                     ),
                   ),
                   child: SelectableText(

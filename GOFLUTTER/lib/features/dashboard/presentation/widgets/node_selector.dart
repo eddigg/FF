@@ -63,7 +63,8 @@ class _NodeSelectorState extends State<NodeSelector> {
           Expanded(
             flex: 3,
             child: StatusIndicator(
-              text: 'Node $_selectedPort',
+              status: StatusType.online,
+              customLabel: 'Node $_selectedPort',
             ),
           ),
           // Port selection buttons
@@ -76,16 +77,11 @@ class _NodeSelectorState extends State<NodeSelector> {
                   padding: const EdgeInsets.only(left: WebParityTheme.spacingXs),
                   child: WebButton(
                     text: port.toString(),
-                    variant: port == _selectedPort 
-                        ? WebButtonVariant.success 
+                    variant: port == _selectedPort
+                        ? WebButtonVariant.success
                         : WebButtonVariant.primary,
                     width: 35, // Fixed width to prevent overflow
                     height: 25, // Smaller height
-                    padding: const EdgeInsets.all(0),
-                    textStyle: WebTypography.caption.copyWith(
-                      color: Colors.white,
-                      fontSize: 10,
-                    ),
                     onPressed: () {
                       // Update the selected port locally
                       setState(() {

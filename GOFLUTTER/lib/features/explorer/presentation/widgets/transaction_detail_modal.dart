@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/transaction_model.dart';
 import '../../../../shared/themes/app_colors.dart';
+import '../../../../shared/themes/app_text_styles.dart';
 
 class TransactionDetailModal extends StatelessWidget {
   final TransactionModel transaction;

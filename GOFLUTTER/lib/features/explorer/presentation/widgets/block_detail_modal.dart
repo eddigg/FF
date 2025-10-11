@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/block_model.dart';
 import '../../../../shared/themes/app_colors.dart';
+import '../../../../shared/themes/app_text_styles.dart';
 
 class BlockDetailModal extends StatelessWidget {
   final BlockModel block;

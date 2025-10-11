@@ -15,4 +15,9 @@ abstract class SocialRepository {
   Future<void> addComment(String postId, String content);
   Future<void> repostPost(String postId);
   Future<List<PostModel>> getTrendingPosts();
+  
+  // Additional methods needed by the BLoC
+  Future<void> toggleLikePost(String postId);
+  Future<void> reportPost(String postId);
+  Future<void> moderateContent(String itemId, String action);
 }

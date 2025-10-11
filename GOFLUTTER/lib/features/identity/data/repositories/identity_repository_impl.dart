@@ -78,4 +78,10 @@ class IdentityRepositoryImpl implements IdentityRepository {
     final data = await apiClient.checkKYCStatus(address);
     return KycStatusModel.fromJson(data);
   }
+
+  @override
+  Future<PrivacySettingsModel> updatePrivacySetting(String setting, dynamic value) async {
+    final data = await apiClient.updatePrivacySetting(setting, value);
+    return PrivacySettingsModel.fromJson(data);
+  }
 }

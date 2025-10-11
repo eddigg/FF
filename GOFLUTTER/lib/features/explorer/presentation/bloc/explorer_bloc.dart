@@ -60,39 +60,37 @@ class StartAutoRefresh extends ExplorerEvent {}
 class StopAutoRefresh extends ExplorerEvent {}
 
 // States
-abstract class ExplorerState extends Equatable {
-  const ExplorerState();
+enum ExplorerStatus { initial, loading, success, failure }
 
-  @override
-  List<Object> get props => [];
-}
-
-class ExplorerInitial extends ExplorerState {}
-
-class ExplorerLoading extends ExplorerState {}
-
-class ExplorerLoaded extends ExplorerState {
-  final List<BlockModel> blocks;
-  final List<TransactionModel> transactions;
-  final bool isTransactionView;
-
-  const ExplorerLoaded({
-    required this.blocks,
-    required this.transactions,
-    required this.isTransactionView,
+class ExplorerState extends Equatable {
+  const ExplorerState({
+    this.status = ExplorerStatus.initial,
+    this.blocks = const <BlockModel>[],
+    this.transactions = const <TransactionModel>[],
+    this.errorMessage,
   });
 
+  final ExplorerStatus status;
+  final List<BlockModel> blocks;
+  final List<TransactionModel> transactions;
+  final String? errorMessage;
+
+  ExplorerState copyWith({
+    ExplorerStatus? status,
+    List<BlockModel>? blocks,
+    List<TransactionModel>? transactions,
+    String? errorMessage,
+  }) {
+    return ExplorerState(
+      status: status ?? this.status,
+      blocks: blocks ?? this.blocks,
+      transactions: transactions ?? this.transactions,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+
   @override
-  List<Object> get props => [blocks, transactions, isTransactionView];
-}
-
-class ExplorerError extends ExplorerState {
-  final String message;
-
-  const ExplorerError(this.message);
-
-  @override
-  List<Object> get props => [message];
+  List<Object?> get props => [status, blocks, transactions, errorMessage];
 }
 
 // BLoC
@@ -100,7 +98,7 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
   final ExplorerRepository explorerRepository;
   Timer? _autoRefreshTimer;
 
-  ExplorerBloc({required this.explorerRepository}) : super(ExplorerInitial()) {
+  ExplorerBloc({required this.explorerRepository}) : super(const ExplorerState()) {
     on<LoadRecentBlocks>(_onLoadRecentBlocks);
     on<LoadRecentTransactions>(_onLoadRecentTransactions);
     on<SearchEvent>(_onSearch);
@@ -122,16 +120,16 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     LoadRecentBlocks event,
     Emitter<ExplorerState> emit,
   ) async {
-    emit(ExplorerLoading());
+    emit(state.copyWith(status: ExplorerStatus.loading));
     try {
       final blocks = await explorerRepository.getRecentBlocks();
-      emit(ExplorerLoaded(
+      emit(state.copyWith(
+        status: ExplorerStatus.success,
         blocks: blocks,
-        transactions: const [],
-        isTransactionView: false,
+        transactions: [],
       ));
     } catch (e) {
-      emit(ExplorerError(e.toString()));
+      emit(state.copyWith(status: ExplorerStatus.failure, errorMessage: e.toString()));
     }
   }
 
@@ -139,16 +137,16 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     LoadRecentTransactions event,
     Emitter<ExplorerState> emit,
   ) async {
-    emit(ExplorerLoading());
+    emit(state.copyWith(status: ExplorerStatus.loading));
     try {
       final transactions = await explorerRepository.getRecentTransactions();
-      emit(ExplorerLoaded(
-        blocks: const [],
+      emit(state.copyWith(
+        status: ExplorerStatus.success,
+        blocks: [],
         transactions: transactions,
-        isTransactionView: true,
       ));
     } catch (e) {
-      emit(ExplorerError(e.toString()));
+      emit(state.copyWith(status: ExplorerStatus.failure, errorMessage: e.toString()));
     }
   }
 
@@ -156,16 +154,16 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     SearchEvent event,
     Emitter<ExplorerState> emit,
   ) async {
-    emit(ExplorerLoading());
+    emit(state.copyWith(status: ExplorerStatus.loading));
     try {
       final blocks = await explorerRepository.search(event.query);
-      emit(ExplorerLoaded(
+      emit(state.copyWith(
+        status: ExplorerStatus.success,
         blocks: blocks,
-        transactions: const [],
-        isTransactionView: false,
+        transactions: [],
       ));
     } catch (e) {
-      emit(ExplorerError(e.toString()));
+      emit(state.copyWith(status: ExplorerStatus.failure, errorMessage: e.toString()));
     }
   }
 
@@ -173,16 +171,16 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     SearchByAddress event,
     Emitter<ExplorerState> emit,
   ) async {
-    emit(ExplorerLoading());
+    emit(state.copyWith(status: ExplorerStatus.loading));
     try {
       final blocks = await explorerRepository.getBlocksByAddress(event.address);
-      emit(ExplorerLoaded(
+      emit(state.copyWith(
+        status: ExplorerStatus.success,
         blocks: blocks,
-        transactions: const [],
-        isTransactionView: false,
+        transactions: [],
       ));
     } catch (e) {
-      emit(ExplorerError(e.toString()));
+      emit(state.copyWith(status: ExplorerStatus.failure, errorMessage: e.toString()));
     }
   }
 
@@ -190,16 +188,16 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     SearchByHash event,
     Emitter<ExplorerState> emit,
   ) async {
-    emit(ExplorerLoading());
+    emit(state.copyWith(status: ExplorerStatus.loading));
     try {
       final blocks = await explorerRepository.getBlockByHash(event.hash);
-      emit(ExplorerLoaded(
+      emit(state.copyWith(
+        status: ExplorerStatus.success,
         blocks: blocks,
-        transactions: const [],
-        isTransactionView: false,
+        transactions: [],
       ));
     } catch (e) {
-      emit(ExplorerError(e.toString()));
+      emit(state.copyWith(status: ExplorerStatus.failure, errorMessage: e.toString()));
     }
   }
 
@@ -207,16 +205,16 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     SearchByBlockNumber event,
     Emitter<ExplorerState> emit,
   ) async {
-    emit(ExplorerLoading());
+    emit(state.copyWith(status: ExplorerStatus.loading));
     try {
       final blocks = await explorerRepository.getBlockByNumber(event.blockNumber);
-      emit(ExplorerLoaded(
+      emit(state.copyWith(
+        status: ExplorerStatus.success,
         blocks: blocks,
-        transactions: const [],
-        isTransactionView: false,
+        transactions: [],
       ));
     } catch (e) {
-      emit(ExplorerError(e.toString()));
+      emit(state.copyWith(status: ExplorerStatus.failure, errorMessage: e.toString()));
     }
   }
 
@@ -247,3 +245,4 @@ class ExplorerBloc extends Bloc<ExplorerEvent, ExplorerState> {
     _autoRefreshTimer = null;
   }
 }
+

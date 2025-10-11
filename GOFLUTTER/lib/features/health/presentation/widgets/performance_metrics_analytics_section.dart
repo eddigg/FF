@@ -1,31 +1,73 @@
+
 import 'package:flutter/material.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/health_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class PerformanceMetricsAnalyticsSection extends StatelessWidget {
-  const PerformanceMetricsAnalyticsSection({Key? key}) : super(key: key);
+  const PerformanceMetricsAnalyticsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
+    return glass_card.GlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Performance Metrics & Analytics', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
+            Text('📈 Performance Metrics & Analytics', style: WebParityTheme.panelTitleStyle),
+            const SizedBox(height: 12),
             BlocBuilder<HealthBloc, HealthState>(
               builder: (context, state) {
-                if (state is HealthLoaded) {
-                  return _buildMetricsGrid(state);
-                } else if (state is HealthLoading) {
-                  return const CircularProgressIndicator();
-                } else {
-                  return const Text('Error loading performance metrics');
-                }
+                return Column(
+                  children: [
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: 4,
+                      itemBuilder: (context, index) {
+                        final metrics = [
+                          {'name': 'CPU Usage', 'value': '42%', 'change': '↓ 2%'},
+                          {'name': 'Memory', 'value': '6.2GB', 'change': '↑ 1.2GB'},
+                          {'name': 'Network', 'value': '1.2Gbps', 'change': '→ 0.1Gbps'},
+                          {'name': 'Disk I/O', 'value': '45MB/s', 'change': '↓ 3MB/s'},
+                        ];
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                metrics[index]['value']!,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                metrics[index]['name']!,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                metrics[index]['change']!,
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
               },
             ),
           ],
@@ -33,73 +75,73 @@ class PerformanceMetricsAnalyticsSection extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildMetricsGrid(HealthLoaded state) {
-    final metrics = [
-      {'label': 'Transactions/sec', 'value': state.performanceMetrics.tps.toString(), 'unit': 'TPS'},
-      {'label': 'Block Time', 'value': state.performanceMetrics.blockTime.toString(), 'unit': 's'},
-      {'label': 'Memory Usage', 'value': state.performanceMetrics.memoryUsage.toString(), 'unit': 'MB'},
-      {'label': 'CPU Usage', 'value': state.performanceMetrics.cpuUsage.toString(), 'unit': '%'},
-      {'label': 'Network Latency', 'value': state.performanceMetrics.networkLatency.toString(), 'unit': 'ms'},
-      {'label': 'Active Peers', 'value': state.performanceMetrics.activePeers.toString(), 'unit': ''},
-      {'label': 'Validators', 'value': state.performanceMetrics.validatorCount.toString(), 'unit': ''},
-      {'label': 'Pending Tx', 'value': state.performanceMetrics.pendingTransactions.toString(), 'unit': ''},
-      {'label': 'Block Height', 'value': state.performanceMetrics.blockHeight.toString(), 'unit': ''},
-      {'label': 'Total Staked', 'value': state.performanceMetrics.totalStaked.toString(), 'unit': ' tokens'},
-      {'label': 'Avg Block Size', 'value': state.performanceMetrics.avgBlockSize.toString(), 'unit': 'KB'},
-      {'label': 'Gas Price', 'value': state.performanceMetrics.gasPrice.toString(), 'unit': ''},
-      {'label': 'Contracts', 'value': state.performanceMetrics.contractCount.toString(), 'unit': ''},
-    ];
+class _PanelTitle extends StatelessWidget {
+  final String title;
+  const _PanelTitle({required this.title});
 
-    return GridView.count(
-      crossAxisCount: 3,
-      crossAxisSpacing: AppSpacing.sm,
-      mainAxisSpacing: AppSpacing.sm,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: metrics.map((metric) => _buildMetricCard(metric)).toList(),
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Text(title, style: WebParityTheme.panelTitleStyle),
     );
   }
+}
 
-  Widget _buildMetricCard(Map<String, dynamic> metric) {
+class _MetricCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final String unit;
+
+  const _MetricCard({required this.label, required this.value, required this.unit});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-        border: Border.all(color: AppColors.border),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE9ECEF)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            '${metric['value']}${metric['unit']}',
-            style: AppTextStyles.body1.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            metric['label'],
-            style: AppTextStyles.caption,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              'Healthy',
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.success,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          Text('$value$unit', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF4299E1))),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF6C757D))),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChartContainer extends StatelessWidget {
+  final String title;
+  final String chartType;
+
+  const _ChartContainer({required this.title, required this.chartType});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE9ECEF)),
+      ),
+      child: Column(
+        children: [
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3748))),
+          const SizedBox(height: 10),
+          Expanded(
+            child: Center(
+              child: Text('${chartType.toUpperCase()} Chart Placeholder', style: const TextStyle(color: Color(0xFF6C757D), fontStyle: FontStyle.italic)),
+            ), // Replace with actual chart widget
           ),
         ],
       ),

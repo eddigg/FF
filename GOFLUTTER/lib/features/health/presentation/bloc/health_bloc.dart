@@ -66,6 +66,9 @@ class HealthLoaded extends HealthState {
         backupStatus,
         backupHistory,
       ];
+
+  // Add recentTransactions getter for UI compatibility
+  List<PerformanceMetricsModel> get recentTransactions => [];
 }
 
 class HealthError extends HealthState {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/themes/app_text_styles.dart';
 import '../../../../shared/themes/app_colors.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,7 +11,7 @@ class SendPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Send Tokens'),
-        backgroundColor: AppColors.background,
+        backgroundColor: const Color(0xFF111827), // Using direct color instead of AppColors.background
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -18,11 +19,9 @@ class SendPage extends StatelessWidget {
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: const Padding(
-          padding: EdgeInsets.all(AppSpacing.containerPadding),
+          padding: EdgeInsets.all(20.0), // Using direct value instead of AppSpacing.containerPadding
           child: Column(
             children: [
               // This page is intentionally left empty as the functionality

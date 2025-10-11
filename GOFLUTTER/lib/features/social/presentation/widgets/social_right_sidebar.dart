@@ -1,155 +1,160 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/social_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class SocialRightSidebar extends StatelessWidget {
-  const SocialRightSidebar({Key? key}) : super(key: key);
+  const SocialRightSidebar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      width: 300,
-      margin: const EdgeInsets.all(AppSpacing.md),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Box
-            TextField(
-              decoration: const InputDecoration(
-                hintText: '🔍 Search posts...',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+    // Mock data for trending topics
+    final mockTrendingTopics = [
+      {'name': '#ATLASBlockchain', 'count': 1245},
+      {'name': '#DeFi', 'count': 892},
+      {'name': '#SmartContracts', 'count': 756},
+      {'name': '#Web3', 'count': 634},
+      {'name': '#Crypto', 'count': 521},
+    ];
+
+    // Mock data for suggested users
+    final mockSuggestedUsers = ['Bob', 'Charlie', 'David', 'Eve'];
+
+    return glass_card.GlassCard(
+      padding: const EdgeInsets.all(25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search Box
+          TextFormField(
+            decoration: WebParityTheme.inputDecoration('🔍 Search posts...'),
+            onChanged: (value) {
+              // For stub implementation, we just show a snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Search functionality')),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          // Trending Now
+          Text('🔥 Trending Now', style: WebParityTheme.panelTitleStyle),
+          const SizedBox(height: 15),
+          Column(
+            children: mockTrendingTopics
+                .map((topic) => _TrendingTopicItem(topic: topic))
+                .toList(),
+          ),
+          const SizedBox(height: 30),
+          // Suggested Users
+          Text('👥 Suggested Users', style: WebParityTheme.panelTitleStyle),
+          const SizedBox(height: 15),
+          Column(
+            children: mockSuggestedUsers
+                .map((username) => _SuggestedUserItem(username: username))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PanelTitle extends StatelessWidget {
+  final String title;
+  const _PanelTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Text(title, style: WebParityTheme.panelTitleStyle),
+    );
+  }
+}
+
+class _TrendingTopicItem extends StatelessWidget {
+  final Map<String, dynamic> topic;
+
+  const _TrendingTopicItem({required this.topic});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            topic['name'],
+            style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF667EEA).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              topic['count'].toString(),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF667EEA)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SuggestedUserItem extends StatelessWidget {
+  final String username;
+
+  const _SuggestedUserItem({required this.username});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)]),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Text(
+                username.substring(0, 1).toUpperCase(),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               ),
-              onChanged: (value) {
-                // TODO: Implement search functionality
-              },
             ),
-            const SizedBox(height: AppSpacing.md),
-            
-            // Trending Topics
-            const Text('🔥 Trending Now', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<SocialBloc, SocialState>(
-              builder: (context, state) {
-                if (state is SocialLoaded) {
-                  return Column(
-                    children: state.trendingTopics.map((topic) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        child: GlassCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.sm),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  topic.name,
-                                  style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.sm,
-                                    vertical: AppSpacing.xs,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                  ),
-                                  child: Text(
-                                    topic.count.toString(),
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                } else if (state is SocialLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  return Container();
-                }
-              },
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              username,
+              style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
             ),
-            
-            const SizedBox(height: AppSpacing.xl),
-            
-            // Suggested Users
-            const Text('👥 Suggested Users', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<SocialBloc, SocialState>(
-              builder: (context, state) {
-                if (state is SocialLoaded) {
-                  return Column(
-                    children: state.suggestedUsers.map((user) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        child: GlassCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.sm),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: const BoxDecoration(
-                                    gradient: AppColors.primaryGradient,
-                                    borderRadius: BorderRadius.all(Radius.circular(15)),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      user.substring(0, 1).toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  user,
-                                  style: AppTextStyles.body1,
-                                ),
-                                const Spacer(),
-                                GradientButton(
-                                  text: 'Follow',
-                                  onPressed: () {
-                                    // TODO: Implement follow functionality
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Followed $user!')),
-                                    );
-                                  },
-                                  gradient: AppColors.primaryGradient,
-                                  width: 70,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                } else if (state is SocialLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  return Container();
-                }
-              },
-            ),
-          ],
-        ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // For stub implementation, we just show a snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Followed $username')),
+              );
+            },
+            style: WebParityTheme.primaryButtonStyle,
+            child: const Text('Follow'),
+          ),
+        ],
       ),
     );
   }

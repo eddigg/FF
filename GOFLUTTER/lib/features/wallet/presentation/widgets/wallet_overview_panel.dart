@@ -4,8 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../bloc/wallet_bloc.dart';
 import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
-import '../../../../shared/widgets/glass_card.dart' as glass_card; // Import with prefix
+import '../../../../shared/themes/app_text_styles.dart';
+import '../../../../shared/themes/app_spacing.dart';
+import '../../../../../shared/widgets/common_widgets.dart';
+import '../../../../shared/widgets/common_widgets.dart' as glass_card; // Import with prefix
+// import '../../../../core/widgets/app_widgets.dart'; // Import GradientButton
 import '../../domain/entities/account.dart';
 
 class WalletOverviewPanel extends StatefulWidget {
@@ -50,7 +53,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Wallet Overview', style: AppTextStyles.h4),
+              Text('Wallet Overview', style: AppTextStyles.h4),
               const SizedBox(height: AppSpacing.md),
               BlocBuilder<WalletBloc, WalletState>(
                 builder: (context, state) {
@@ -58,11 +61,13 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                     return Container(
                       padding: const EdgeInsets.all(20.0),
                       decoration: BoxDecoration(
-                        gradient: AppColors.walletGradient,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF11998e), Color(0xFF0D7A6F)],
+                        ),
                         borderRadius: BorderRadius.circular(16.0),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.defiGreen.withValues(alpha: 0.2),
+                            color: const Color(0xFF11998E).withValues(alpha: 0.2),
                             offset: const Offset(0, 8),
                             blurRadius: 25,
                             spreadRadius: 0,
@@ -75,12 +80,12 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                         children: [
                           Text(
                             '${state.balance.toStringAsFixed(2)} tokens',
-                            style: AppTextStyles.balance.copyWith(color: Colors.white),
+                            style: AppTextStyles.h3.copyWith(color: Colors.white),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             state.address,
-                            style: AppTextStyles.address.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                            style: AppTextStyles.caption.copyWith(color: Colors.white.withValues(alpha: 0.9)),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -90,9 +95,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                 onPressed: () {
                                   _copyToClipboard(context, state.address);
                                 },
-                                gradient: AppColors.secondaryGradient,
-                                size: ButtonSize.small,
-                                textStyle: AppTextStyles.button.copyWith(fontSize: 12, color: Colors.white),
+                                gradient: const LinearGradient(colors: AppColors.secondaryGradient),
                               ),
                               const SizedBox(width: AppSpacing.sm),
                               GradientButton(
@@ -100,9 +103,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                 onPressed: () {
                                   _showQRCode(context, state.address);
                                 },
-                                gradient: AppColors.secondaryGradient,
-                                size: ButtonSize.small,
-                                textStyle: AppTextStyles.button.copyWith(fontSize: 12, color: Colors.white),
+                                gradient: const LinearGradient(colors: AppColors.secondaryGradient),
                               ),
                             ],
                           ),
@@ -116,21 +117,21 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                   }
                 },
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: AppSpacing.md),
               Container(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Account Management', style: AppTextStyles.h4),
+                    Text('Account Management', style: AppTextStyles.h4),
                     const SizedBox(height: AppSpacing.sm),
                     BlocBuilder<WalletBloc, WalletState>(
                       builder: (context, state) {
@@ -145,7 +146,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                   items: state.accounts.map((account) {
                                     return DropdownMenuItem<WalletAccount>(
                                       value: account,
-                                      child: Text(account.name),
+                                      child: Text(account.name, style: AppTextStyles.body1),
                                     );
                                   }).toList(),
                                   onChanged: (account) {
@@ -154,7 +155,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                     }
                                   },
                                   isExpanded: true,
-                                  hint: const Text('Select Account'),
+                                  hint: const Text('Select Account', style: AppTextStyles.body1),
                                 ),
                                 const SizedBox(height: AppSpacing.sm),
                               ],
@@ -169,7 +170,6 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                     onPressed: () {
                                       _showCreateAccountDialog(context);
                                     },
-                                    size: ButtonSize.small,
                                   ),
                                   GradientButton(
                                     text: '📤 Export', 
@@ -182,14 +182,12 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                         );
                                       }
                                     },
-                                    size: ButtonSize.small,
                                   ),
                                   GradientButton(
                                     text: '📥 Import', 
                                     onPressed: () {
                                       _showImportAccountDialog(context);
                                     },
-                                    size: ButtonSize.small,
                                   ),
                                   GradientButton(
                                     text: '🗑️ Delete', 
@@ -202,236 +200,114 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                                         );
                                       }
                                     },
-                                    size: ButtonSize.small,
                                   ),
                                 ],
                               ),
                             ],
                           );
                         }
-                        return Container();
+                        return const SizedBox.shrink();
                       },
                     ),
                   ],
                 ),
               ),
-              
-              const SizedBox(height: 12),
-              
-              // Faucet Section
+              const SizedBox(height: AppSpacing.md),
+              // KYC Section
               Container(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
+                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFFF6B6B), Color(0xFFEE5A24)],
                   ),
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '🚰 Testnet Faucet',
-                      style: AppTextStyles.h5.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Get test tokens to try out the blockchain. Free tokens for testing!',
-                      style: AppTextStyles.caption.copyWith(color: Colors.white70),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    GradientButton(
-                      text: '💰 Request Faucet',
-                      onPressed: () {
-                        context.read<WalletBloc>().add(RequestTestTokens());
-                      },
-                      gradient: AppColors.successGradient,
-                      size: ButtonSize.small,
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Validator Registration Section
-              Container(
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  gradient: AppColors.walletGradient,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '🏛️ Validator Registration',
-                      style: AppTextStyles.h5.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Register as a validator to participate in consensus and earn rewards',
-                      style: AppTextStyles.caption.copyWith(color: Colors.white70),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    GradientButton(
-                      text: '🏛️ Register as Validator',
-                      onPressed: () {
-                        setState(() {
-                          _showKycFields = !_showKycFields;
-                        });
-                      },
-                      gradient: AppColors.successGradient,
-                      size: ButtonSize.small,
-                    ),
-                    
-                    // KYC Fields (hidden by default)
-                    if (_showKycFields) ...[
-                      const SizedBox(height: AppSpacing.md),
-                      Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('KYC Verification', style: AppTextStyles.h4),
+                        IconButton(
+                          icon: Icon(_showKycFields ? Icons.expand_less : Icons.expand_more),
+                          onPressed: () {
+                            setState(() {
+                              _showKycFields = !_showKycFields;
+                            });
+                          },
                         ),
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _kycStakeController,
-                              style: AppTextStyles.body1.copyWith(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: 'Stake Amount (min: 100)',
-                                labelStyle: AppTextStyles.caption.copyWith(color: Colors.white70),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white30),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white),
-                                ),
-                              ),
-                              keyboardType: TextInputType.number,
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            TextFormField(
-                              controller: _kycFullNameController,
-                              style: AppTextStyles.body1.copyWith(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: 'Full Name',
-                                labelStyle: AppTextStyles.caption.copyWith(color: Colors.white70),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white30),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            TextFormField(
-                              controller: _kycCountryController,
-                              style: AppTextStyles.body1.copyWith(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: 'Country',
-                                labelStyle: AppTextStyles.caption.copyWith(color: Colors.white70),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white30),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            TextFormField(
-                              controller: _kycIdNumberController,
-                              style: AppTextStyles.body1.copyWith(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: 'ID Number',
-                                labelStyle: AppTextStyles.caption.copyWith(color: Colors.white70),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white30),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                                  borderSide: const BorderSide(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _kycVerified,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _kycVerified = value ?? false;
-                                    });
-                                  },
-                                  fillColor: WidgetStateProperty.all(Colors.white),
-                                ),
-                                Text(
-                                  'KYC Verified',
-                                  style: AppTextStyles.caption.copyWith(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            GradientButton(
-                              text: 'Submit Registration',
-                              onPressed: _submitValidatorRegistration,
-                              gradient: AppColors.successGradient,
-                              size: ButtonSize.small,
-                            ),
-                          ],
+                      ],
+                    ),
+                    if (_showKycFields) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      TextField(
+                        controller: _kycStakeController,
+                        decoration: InputDecoration(
+                          labelText: 'Stake Amount',
+                          labelStyle: AppTextStyles.body1,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextField(
+                        controller: _kycFullNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Full Name',
+                          labelStyle: AppTextStyles.body1,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextField(
+                        controller: _kycCountryController,
+                        decoration: InputDecoration(
+                          labelText: 'Country',
+                          labelStyle: AppTextStyles.body1,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      TextField(
+                        controller: _kycIdNumberController,
+                        decoration: InputDecoration(
+                          labelText: 'ID Number',
+                          labelStyle: AppTextStyles.body1,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _kycVerified,
+                            onChanged: (value) {
+                              setState(() {
+                                _kycVerified = value ?? false;
+                              });
+                            },
+                          ),
+                          const Text('Verified', style: AppTextStyles.body1),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      GradientButton(
+                        text: 'Submit KYC',
+                        onPressed: _submitKyc,
+                        width: double.infinity,
+                      ),
                     ],
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Security Info Section
-              Container(
-                padding: const EdgeInsets.all(10.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFf8f9fa),
-                  borderRadius: BorderRadius.circular(6.0),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Wallet Security',
-                      style: AppTextStyles.h5,
-                    ),
-                    SizedBox(height: AppSpacing.sm),
-                    Text(
-                      '🔒 Private Key: Never shared with the server',
-                      style: AppTextStyles.caption,
-                    ),
-                    Text(
-                      '🔐 Signing: Done locally in your browser',
-                      style: AppTextStyles.caption,
-                    ),
-                    Text(
-                      '💾 Storage: Encrypted in browser localStorage',
-                      style: AppTextStyles.caption,
-                    ),
-                    Text(
-                      '⚠️ Warning: Clear browser data = lost wallet',
-                      style: AppTextStyles.caption,
-                    ),
                   ],
                 ),
               ),
@@ -445,10 +321,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
   void _copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Address copied to clipboard!'),
-        duration: Duration(seconds: 2),
-      ),
+      const SnackBar(content: Text('Address copied to clipboard')),
     );
   }
 
@@ -457,7 +330,7 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Wallet QR Code'),
+          title: const Text('Wallet Address QR Code'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -466,25 +339,13 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
                 version: QrVersions.auto,
                 size: 200.0,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                address,
-                style: AppTextStyles.caption,
-                textAlign: TextAlign.center,
-              ),
               const SizedBox(height: AppSpacing.sm),
-              const Text(
-                'Scan this QR code to share your wallet address',
-                style: AppTextStyles.caption,
-                textAlign: TextAlign.center,
-              ),
+              Text(address, style: AppTextStyles.caption),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Close'),
             ),
           ],
@@ -494,29 +355,31 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
   }
 
   void _showCreateAccountDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    bool _isCreatingAccount = false;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Create New Account'),
           content: TextField(
-            controller: _accountNameController,
+            controller: nameController,
             decoration: const InputDecoration(
-              labelText: 'Account Name (optional)',
+              labelText: 'Account Name',
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                context.read<WalletBloc>().add(CreateAccount(name: _accountNameController.text));
-                _accountNameController.clear();
-                Navigator.of(context).pop();
+                if (_isCreatingAccount) return;
+                if (nameController.text.isNotEmpty) {
+                  context.read<WalletBloc>().add(CreateAccount(name: nameController.text));
+                  nameController.clear();
+                }
               },
               child: const Text('Create'),
             ),
@@ -527,32 +390,31 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
   }
 
   void _showImportAccountDialog(BuildContext context) {
-    final TextEditingController privateKeyController = TextEditingController();
-    
+    final jsonController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Import Account'),
           content: TextField(
-            controller: privateKeyController,
+            controller: jsonController,
+            maxLines: 3,
             decoration: const InputDecoration(
-              labelText: 'Private Key',
-              hintText: 'Enter your private key',
+              labelText: 'Account JSON',
+              hintText: 'Paste your account JSON here',
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                context.read<WalletBloc>().add(ImportAccount(privateKeyController.text));
-                privateKeyController.clear();
-                Navigator.of(context).pop();
+                if (jsonController.text.isNotEmpty) {
+                  context.read<WalletBloc>().add(ImportAccount(jsonController.text));
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Import'),
             ),
@@ -563,12 +425,10 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
   }
 
   void _exportAccount(BuildContext context, WalletAccount account) {
-    // In a real implementation, this would export the account to a file
-    // For now, we'll just show a message
+    // In a real implementation, this would export the account data
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Account exported successfully!')),
+      const SnackBar(content: Text('Account exported')),
     );
-    context.read<WalletBloc>().add(ExportAccount(account));
   }
 
   void _confirmDeleteAccount(BuildContext context, WalletAccount account) {
@@ -577,12 +437,10 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Delete Account'),
-          content: const Text('Are you sure you want to delete this account? This cannot be undone.'),
+          content: Text('Are you sure you want to delete account "${account.name}"?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
@@ -598,46 +456,10 @@ class _WalletOverviewPanelState extends State<WalletOverviewPanel> {
     );
   }
 
-  void _submitValidatorRegistration() {
-    final stake = int.tryParse(_kycStakeController.text);
-    if (stake == null || stake < 100) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid stake amount (min: 100)')),
-      );
-      return;
-    }
-    
-    if (_kycFullNameController.text.isEmpty || 
-        _kycCountryController.text.isEmpty || 
-        _kycIdNumberController.text.isEmpty || 
-        !_kycVerified) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All KYC fields are required and must be verified.')),
-      );
-      return;
-    }
-    
-    // Call the bloc to register as validator
-    context.read<WalletBloc>().add(RegisterAsValidator(
-      stake: stake,
-      fullName: _kycFullNameController.text,
-      country: _kycCountryController.text,
-      idNumber: _kycIdNumberController.text,
-    ));
-    
-    // Show success message
+  void _submitKyc() {
+    // In a real implementation, this would submit KYC data
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Registered as validator!')),
+      const SnackBar(content: Text('KYC submitted')),
     );
-    
-    // Clear KYC fields
-    _kycStakeController.clear();
-    _kycFullNameController.clear();
-    _kycCountryController.clear();
-    _kycIdNumberController.clear();
-    setState(() {
-      _kycVerified = false;
-      _showKycFields = false;
-    });
   }
 }

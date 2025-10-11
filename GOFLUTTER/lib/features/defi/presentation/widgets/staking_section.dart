@@ -1,155 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/defi_bloc.dart';
-import '../../data/models/staking_option_model.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import '../../../../core/stubs/stub_blocs_clean.dart'; // Use stub BLoC instead
+import 'package:atlas_blockchain_flutter/shared/widgets/common_widgets.dart' as glass_card;
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
-class StakingSection extends StatefulWidget {
-  const StakingSection({Key? key}) : super(key: key);
-
-  @override
-  State<StakingSection> createState() => _StakingSectionState();
-}
-
-class _StakingSectionState extends State<StakingSection> {
-  final TextEditingController _amountController = TextEditingController();
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    super.dispose();
-  }
+class StakingSection extends StatelessWidget {
+  const StakingSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Staking', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<DeFiBloc, DeFiState>(
-              builder: (context, state) {
-                if (state is DeFiLoaded) {
-                  return GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: AppSpacing.md,
-                    mainAxisSpacing: AppSpacing.md,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: state.stakingOptions.map((option) => _buildStakingCard(context, option)).toList(),
-                  );
-                } else if (state is DeFiLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else {
-                  return const Center(child: Text('Error loading staking options'));
-                }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('🔒 Staking', style: WebParityTheme.panelTitleStyle),
+        const SizedBox(height: 20),
+        BlocBuilder<DeFiBloc, DeFiState>(
+          builder: (context, state) {
+            // Since we're using stub BLoC, we'll show mock data
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20,
+                childAspectRatio: 1.0, // Adjust as needed
+              ),
+              itemCount: _mockStakingOptions.length,
+              itemBuilder: (context, index) {
+                final option = _mockStakingOptions[index];
+                return _StakingCard(option: option);
               },
-            ),
-          ],
+            );
+          },
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildStakingCard(BuildContext context, StakingOptionModel option) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: AppColors.border),
-      ),
+  static final List<Map<String, dynamic>> _mockStakingOptions = [
+    {
+      'reward': '12.5%',
+      'period': 'Annual',
+      'minStake': 100,
+    },
+    {
+      'reward': '8.0%',
+      'period': '6 Months',
+      'minStake': 50,
+    },
+    {
+      'reward': '5.5%',
+      'period': '3 Months',
+      'minStake': 25,
+    },
+    {
+      'reward': '3.0%',
+      'period': '1 Month',
+      'minStake': 10,
+    },
+  ];
+}
+
+class _StakingCard extends StatelessWidget {
+  final Map<String, dynamic> option;
+
+  const _StakingCard({required this.option});
+
+  @override
+  Widget build(BuildContext context) {
+    return glass_card.GlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            option.reward,
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            option.period,
-            style: AppTextStyles.caption,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Min: \$${option.minStake}',
-            style: AppTextStyles.caption,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          GradientButton(
-            text: 'Stake Now',
-            onPressed: () {
-              _showStakeDialog(context, option);
-            },
-          ),
+          Text(option['reward'] as String, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF48BB78))),
+          const SizedBox(height: 5),
+          Text(option['period'] as String, style: const TextStyle(color: Color(0xFF718096))),
+          const SizedBox(height: 15),
+          Text('Min: \$${option['minStake']}', style: const TextStyle(color: Color(0xFF718096))),
+          const SizedBox(height: 15),
+          SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () {}, style: WebParityTheme.primaryButtonStyle, child: const Text('Stake Now'))),
         ],
       ),
-    );
-  }
-
-  void _showStakeDialog(BuildContext context, StakingOptionModel option) {
-    _amountController.clear();
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Stake in ${option.reward} Pool'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Minimum stake: \$${option.minStake}'),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount to stake',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final amount = double.tryParse(_amountController.text);
-                if (amount != null && amount >= option.minStake) {
-                  // In a real implementation, we would get the user's address
-                  final userAddress = '0x1234567890abcdef'; // Placeholder address
-                  
-                  context.read<DeFiBloc>().add(StakeTokens(
-                    address: userAddress,
-                    poolId: option.id,
-                    amount: amount,
-                  ));
-                  
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Tokens staked successfully!')),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid amount or below minimum stake')),
-                  );
-                }
-              },
-              child: const Text('Stake'),
-            ),
-          ],
-        );
-      },
     );
   }
 }

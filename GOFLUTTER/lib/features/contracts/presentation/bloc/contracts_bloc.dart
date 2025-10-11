@@ -60,9 +60,9 @@ class CallContractFunction extends ContractsEvent {
 }
 
 class LoadExampleContract extends ContractsEvent {
-  final ContractExampleModel example;
+  final String example;
 
-  const LoadExampleContract({required this.example});
+  const LoadExampleContract(this.example);
 
   @override
   List<Object> get props => [example];
@@ -85,16 +85,18 @@ class ContractsLoaded extends ContractsState {
   final List<ContractExampleModel> contractExamples;
   final ContractModel? selectedContract;
   final String? deploymentStatus;
+  final ContractExampleModel? exampleToLoad;
 
   const ContractsLoaded({
     required this.deployedContracts,
     required this.contractExamples,
     this.selectedContract,
     this.deploymentStatus,
+    this.exampleToLoad,
   });
 
   @override
-  List<Object> get props => [deployedContracts, contractExamples, selectedContract ?? '', deploymentStatus ?? ''];
+  List<Object> get props => [deployedContracts, contractExamples, selectedContract ?? '', deploymentStatus ?? '', exampleToLoad ?? ''];
 }
 
 class ContractsError extends ContractsState {
@@ -207,8 +209,24 @@ class ContractsBloc extends Bloc<ContractsEvent, ContractsState> {
     LoadExampleContract event,
     Emitter<ContractsState> emit,
   ) async {
-    // This event is handled in the UI, not in the BLoC
-    // We just pass it through to update the UI
-    emit(state);
+    if (state is ContractsLoaded) {
+      final currentState = state as ContractsLoaded;
+      final example = currentState.contractExamples.firstWhere(
+        (ex) => ex.name.toLowerCase().contains(event.example.toLowerCase()),
+        orElse: () => ContractExampleModel(
+          name: event.example,
+          description: 'Example contract',
+          code: 'pragma solidity ^0.8.0; contract ${event.example} {}',
+        ),
+      );
+
+      emit(ContractsLoaded(
+        deployedContracts: currentState.deployedContracts,
+        contractExamples: currentState.contractExamples,
+        selectedContract: currentState.selectedContract,
+        deploymentStatus: currentState.deploymentStatus,
+        exampleToLoad: example,
+      ));
+    }
   }
 }

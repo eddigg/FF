@@ -1,83 +1,71 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/social_bloc.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/common_widgets.dart';
+import 'package:atlas_blockchain_flutter/shared/themes/web_parity_theme.dart';
 
 class TrendingTopicsSection extends StatelessWidget {
-  const TrendingTopicsSection({Key? key}) : super(key: key);
+  const TrendingTopicsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('🔥 Trending Topics', style: AppTextStyles.h4),
-            const SizedBox(height: AppSpacing.md),
-            BlocBuilder<SocialBloc, SocialState>(
-              builder: (context, state) {
-                if (state is SocialLoaded) {
-                  if (state.trendingTopics.isEmpty) {
-                    return const Text(
-                      'No trending topics at the moment.',
-                      style: AppTextStyles.body1,
-                    );
-                  }
+    // Mock data for trending topics
+    final mockTrendingTopics = [
+      {'name': '#ATLASBlockchain', 'count': 1245},
+      {'name': '#DeFi', 'count': 892},
+      {'name': '#SmartContracts', 'count': 756},
+      {'name': '#Web3', 'count': 634},
+      {'name': '#Crypto', 'count': 521},
+    ];
 
-                  return Column(
-                    children: state.trendingTopics.map((topic) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                        child: GlassCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(AppSpacing.sm),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  topic.name,
-                                  style: AppTextStyles.body1.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.sm,
-                                    vertical: AppSpacing.xs,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                                  ),
-                                  child: Text(
-                                    topic.count.toString(),
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                } else if (state is SocialLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is SocialError) {
-                  return Text(
-                    'Error loading trending topics: ${state.message}',
-                    style: AppTextStyles.body1,
-                  );
-                }
-                return Container();
-              },
-            ),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('🔥 Trending Topics', style: WebParityTheme.panelTitleStyle),
+        const SizedBox(height: 20),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: mockTrendingTopics.length,
+          itemBuilder: (context, index) {
+            final topic = mockTrendingTopics[index];
+            return _TrendingTopicItem(topic: topic);
+          },
         ),
+      ],
+    );
+  }
+}
+
+class _TrendingTopicItem extends StatelessWidget {
+  final Map<String, dynamic> topic;
+
+  const _TrendingTopicItem({required this.topic});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            topic['name'],
+            style: const TextStyle(fontWeight: FontWeight.w500, color: Color(0xFF2D3748)),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF667EEA).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              topic['count'].toString(),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF667EEA)),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../data/models/transaction_model.dart';
 import 'transaction_detail_modal.dart';
-import '../../../../shared/themes/app_colors.dart';
-import '../../../../shared/widgets/custom_widgets.dart';
+import '../../../../shared/widgets/common_widgets.dart';
 
 class TransactionListItem extends StatelessWidget {
-  final TransactionModel transaction;
+  final dynamic transaction; // Accept both TransactionModel and Map
 
-  const TransactionListItem({Key? key, required this.transaction}) : super(key: key);
+  const TransactionListItem({Key? key, required this.transaction})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +21,11 @@ class TransactionListItem extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.md),
-        child: EnhancedGlassCard(
+        margin: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.md,
+        ),
+        child: GlassCard(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
@@ -32,51 +35,71 @@ class TransactionListItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${transaction.amount} tokens',
+                      '${_getTransactionProperty('value')}',
                       style: AppTextStyles.h4.copyWith(
                         fontSize: 18,
                         color: AppColors.primary,
                       ),
                     ),
                     Text(
-                      _formatTimestamp(transaction.timestamp),
+                      _getTransactionProperty('timestamp').toString(),
                       style: AppTextStyles.caption,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Hash: ${_shortenHash(transaction.hash)}',
+                  'Hash: ${_shortenHash(_getTransactionProperty('hash'))}',
                   style: AppTextStyles.address,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDetail('From', _shortenAddress(transaction.from)),
-                    _buildDetail('To', _shortenAddress(transaction.to)),
+                    _buildDetail(
+                      'From',
+                      _shortenAddress(_getTransactionProperty('from')),
+                    ),
+                    _buildDetail(
+                      'To',
+                      _shortenAddress(_getTransactionProperty('to')),
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildDetail('Fee', '${transaction.fee} tokens'),
-                    _buildDetail('Nonce', transaction.nonce.toString()),
+                    _buildDetail(
+                      'Gas Price',
+                      _getTransactionProperty('gasPrice').toString(),
+                    ),
+                    _buildDetail(
+                      'Status',
+                      _getTransactionProperty('status').toString(),
+                    ),
                   ],
                 ),
-                if (transaction.data.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  _buildDetail('Data', transaction.data),
-                ],
                 const SizedBox(height: AppSpacing.sm),
-                _buildDetail('Signature', _shortenHash(transaction.signature)),
+                _buildDetail(
+                  'Block',
+                  _getTransactionProperty('blockNumber').toString(),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  dynamic _getTransactionProperty(String key) {
+    if (transaction is Map<String, dynamic>) {
+      return transaction[key] ?? 'N/A';
+    } else {
+      // Handle TransactionModel if needed
+      return 'N/A';
+    }
   }
 
   Widget _buildDetail(String title, String value) {
@@ -90,7 +113,9 @@ class TransactionListItem extends StatelessWidget {
   }
 
   String _formatTimestamp(int timestamp) {
-    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(
+      timestamp * 1000,
+    );
     return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
   }
 

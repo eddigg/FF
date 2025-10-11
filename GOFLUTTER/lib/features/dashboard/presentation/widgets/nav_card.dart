@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../shared/themes/app_colors.dart';
+import '../../../../shared/themes/app_text_styles.dart';
+import '../../../../shared/themes/app_spacing.dart';
 import '../../../../shared/widgets/common_widgets.dart';
-import '../../../../shared/widgets/custom_widgets.dart';
+// import '../../../../core/widgets/app_widgets.dart';
 
 class NavCard extends StatelessWidget {
   final String title;
@@ -25,7 +27,7 @@ class NavCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EnhancedGlassCard(
+    return GlassCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -63,10 +65,10 @@ class NavCard extends StatelessWidget {
               text: buttonText,
               onPressed: onPressed,
               gradient: isSuccess
-                  ? AppColors.successGradient
+                  ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
                   : isWarning
-                      ? AppColors.warningGradient
-                      : AppColors.primaryGradient,
+                      ? const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFDD6B20)])
+                      : const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
               width: double.infinity,
               textStyle: AppTextStyles.button.copyWith(
                 fontSize: 13,
