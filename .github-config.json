@@ -1,0 +1,36 @@
+{
+  "repository": {
+    "name": "atlas-wallet-portal",
+    "description": "Flutter-first blockchain ecosystem with AI-assisted development and autonomous operations",
+    "topics": ["blockchain", "flutter", "ai-assisted-development", "autonomous-operations", "agentic-development"],
+    "private": false,
+    "has_issues": true,
+    "has_projects": true,
+    "has_wiki": false,
+    "has_discussions": true
+  },
+  "branches": {
+    "main": {
+      "protected": true,
+      "required_reviews": 2,
+      "required_checks": ["build", "test", "security"],
+      "restrictions": ["admin"]
+    },
+    "staging": {
+      "protected": true,
+      "required_reviews": 1,
+      "required_checks": ["build", "test"]
+    },
+    "production": {
+      "protected": true,
+      "required_reviews": 3,
+      "required_checks": ["e2e", "performance", "security"],
+      "restrictions": ["maintainer"]
+    }
+  },
+  "pipelines": {
+    "ci_cd": "GitHub Actions",
+    "docker_registry": "ghcr.io",
+    "deployment": "Vercel/Netlify for web, Heroku/Railway for backend"
+  }
+}
