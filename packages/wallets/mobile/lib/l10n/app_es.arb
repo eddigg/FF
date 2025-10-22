@@ -1,0 +1,10 @@
+// lib/l10n/app_es.arb
+{
+  "walletAddress": "Dirección de Billetera",
+  "balance": "Saldo",
+  "transactions": "Transacciones",
+  "refreshBalance": "Actualizar Saldo",
+  "sendAtlas": "Enviar ATLAS",
+  "loading": "Cargando...",
+  "errorLoadingWallet": "Error al cargar la billetera"
+}

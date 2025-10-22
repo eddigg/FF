@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "618504134340",
+    "firebase_url": "https://cercaend-vk8icg-default-rtdb.firebaseio.com",
+    "project_id": "cercaend-vk8icg",
+    "storage_bucket": "cercaend-vk8icg.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:618504134340:android:b6fd6154c7ffc33c107391",
+        "android_client_info": {
+          "package_name": "com.mycompany.cercaend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "618504134340-sfea2p68gq4sf8g5ut19fpvv35shu57c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.cercaend",
+            "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
+          }
+        },
+        {
+          "client_id": "618504134340-54hba217vfddqpsu93limup09rdegfis.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM8sm_SRLoOcXaGCna8uOHHQD4Kguy0tI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "618504134340-54hba217vfddqpsu93limup09rdegfis.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "618504134340-5h0cc4ppts6hl1bg2kdvm8ot59rtlsbe.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mycompany.cercaend"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

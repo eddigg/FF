@@ -1,0 +1,10 @@
+// lib/l10n/app_en.arb
+{
+  "walletAddress": "Wallet Address",
+  "balance": "Balance",
+  "transactions": "Transactions",
+  "refreshBalance": "Refresh Balance",
+  "sendAtlas": "Send ATLAS",
+  "loading": "Loading...",
+  "errorLoadingWallet": "Error loading wallet"
+}

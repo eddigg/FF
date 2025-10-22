@@ -1,0 +1,70 @@
+// shared/proto/blockchain.proto
+syntax = "proto3";
+
+package blockchain;
+
+message Wallet {
+  string public_key = 1;
+  string cercaend_id = 2;
+  map<string, string> metadata = 3;
+}
+
+message Transaction {
+  string hash = 1;
+  string from = 2;
+  string to = 3;
+  double amount = 4;
+  int64 timestamp = 5;
+  map<string, string> metadata = 6;
+  string status = 7;
+}
+
+message WalletRequest {
+  string cercaend_id = 1;
+}
+
+message WalletResponse {
+  Wallet wallet = 1;
+}
+
+message TransactionRequest {
+  string from = 1;
+  string to = 2;
+  double amount = 3;
+  map<string, string> metadata = 4;
+}
+
+message TransactionResponse {
+  Transaction transaction = 1;
+}
+
+message WalletInfoRequest {
+  string address = 1;
+}
+
+message WalletInfoResponse {
+  Wallet wallet = 1;
+  repeated Transaction transactions = 2;
+}
+
+message TransactionHistoryRequest {
+  string address = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message TransactionHistoryResponse {
+  repeated Transaction transactions = 1;
+}
+
+message SubscriptionRequest {
+  string address = 1;
+}
+
+service Blockchain {
+  rpc CreateWallet (WalletRequest) returns (WalletResponse);
+  rpc SendTransaction (TransactionRequest) returns (TransactionResponse);
+  rpc GetWalletInfo (WalletInfoRequest) returns (WalletInfoResponse);
+  rpc GetTransactionHistory (TransactionHistoryRequest) returns (TransactionHistoryResponse);
+  rpc SubscribeToTransactions (SubscriptionRequest) returns (stream Transaction);
+}

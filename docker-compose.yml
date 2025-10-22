@@ -1,0 +1,35 @@
+# config/docker-compose.yml
+version: '3.8'
+
+services:
+  blockchain-node:
+    build: ./apps/blockchain
+    ports:
+      - "8080:8080"
+      - "50051:50051"  # gRPC port
+    volumes:
+      - blockchain-data:/data
+    environment:
+      - NODE_ENV=development
+
+  api-gateway:
+    build: ./integrations/api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - blockchain-node
+    environment:
+      - BLOCKCHAIN_URL=http://blockchain-node:8080
+
+  cercaend-frontend:
+    build: ./apps/cercaend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - api-gateway
+    environment:
+      - BLOCKCHAIN_API_URL=http://api-gateway:3000
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG}
+
+volumes:
+  blockchain-data:

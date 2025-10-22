@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --dark-bg: #2c3e50;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), #0052a3);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .metric-card {
+            background: white;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .metric-card.healthy {
+            border-left-color: var(--success-color);
+        }
+
+        .metric-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .metric-card.critical {
+            border-left-color: var(--danger-color);
+        }
+
+        .alert-critical {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-healthy {
+            background-color: var(--success-color);
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.4);
+        }
+
+        .status-warning {
+            background-color: var(--warning-color);
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+        }
+
+        .status-critical {
+            background-color: var(--danger-color);
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tabs .nav-link.active {
+            border-color: var(--primary-color) var(--primary-color) #fff;
+            color: var(--primary-color);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 102, 204, 0.05);
+        }
+
+        .btn-acknowledge {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            transition: all 0.3s ease;
+        }
+
+        .btn-acknowledge:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line me-2"></i>
+                ATLAS Monitoring Dashboard
+            </a>
+            <div class="d-flex align-items-center">
+                <div id="globalStatusIndicator" class="d-flex align-items-center me-3">
+                    <div class="status-indicator status-healthy pulse" id="globalStatus"></div>
+                    <small class="text-white" id="globalStatusText">All Systems Operational</small>
+                </div>
+                <small class="text-white">v{{.Version}}</small>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- System Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card metric-card" id="systemCard">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="metric-label">System Health</h6>
+                                <div class="metric-value" id="systemScore">85%</div>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-server fa-2x text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card" id="blockchainCard">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="metric-label">Blockchain TPS</h6>
+                                <div class="metric-value" id="tpsValue">15.7</div>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-link fa-2x text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card" id="flutterCard">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="metric-label">Active Users</h6>
+                                <div class="metric-value" id="activeUsers">2,350</div>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-mobile-alt fa-2x text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card" id="alertCard">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="metric-label">Active Alerts</h6>
+                                <div class="metric-value" id="activeAlerts">0</div>
+                            </div>
+                            <div class="text-end">
+                                <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Tabs -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="dashboardTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Overview
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="blockchain-tab" data-bs-toggle="tab" data-bs-target="#blockchain" type="button" role="tab">
+                                    <i class="fas fa-cubes me-2"></i>Blockchain
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="flutter-tab" data-bs-toggle="tab" data-bs-target="#flutter" type="button" role="tab">
+                                    <i class="fas fa-mobile-alt me-2"></i>Flutter Apps
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="alerts-tab" data-bs-toggle="tab" data-bs-target="#alerts" type="button" role="tab">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Alerts
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">
+                                    <i class="fas fa-chart-bar me-2"></i>Analytics
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="dashboardTabsContent">
+
+                            <!-- Overview Tab -->
+                            <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Health Overview</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="healthChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Resource Usage</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="resourceChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Activity</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="recentActivity" class="list-group list-group-flush">
+                                                    <!-- Activity items will be populated by JavaScript -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>System Status</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-sm">
+                                                    <tbody id="systemStatusTable">
+                                                        <!-- System status items will be populated by JavaScript -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Blockchain Tab -->
+                            <div class="tab-pane fade" id="blockchain" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Block Height</h5>
+                                                <h2 class="text-primary" id="blockHeight">1,250,432</h2>
+                                                <small class="text-muted">Latest block</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Transaction Throughput</h5>
+                                                <h2 class="text-success" id="tps">15.7 TPS</h2>
+                                                <small class="text-muted">Transactions/second</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Active Validators</h5>
+                                                <h2 class="text-info" id="validators">64</h2>
+                                                <small class="text-muted">Online validators</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-signal me-2"></i>Network Performance</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="blockchainPerformanceChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Peer Network</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="peerNetworkChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Flutter Apps Tab -->
+                            <div class="tab-pane fade" id="flutter" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Total Users</h5>
+                                                <h2 class="text-primary" id="totalUsers">15,430</h2>
+                                                <small class="text-muted">Registered users</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Active Sessions</h5>
+                                                <h2 class="text-success" id="activeSessions">2,350</h2>
+                                                <small class="text-muted">Current active</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Avg. Session</h5>
+                                                <h2 class="text-info" id="avgSession">12.3m</h2>
+                                                <small class="text-muted">Session duration</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title">App Performance</h5>
+                                                <h2 class="text-warning" id="appScore">94.5%</h2>
+                                                <small class="text-muted">Performance score</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>User Engagement</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="engagementChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-mobile me-2"></i>Device Distribution</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="deviceChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-code me-2"></i>App Versions</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="versionChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alerts Tab -->
+                            <div class="tab-pane fade" id="alerts" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-danger">Critical</h5>
+                                                <h2 class="text-danger" id="criticalCount">0</h2>
+                                                <small class="text-muted">Active critical alerts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-warning">Warnings</h5>
+                                                <h2 class="text-warning" id="warningCount">0</h2>
+                                                <small class="text-muted">Active warnings</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-info">Info</h5>
+                                                <h2 class="text-info" id="infoCount">0</h2>
+                                                <small class="text-muted">Active info alerts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h5 class="card-title text-muted">Total</h5>
+                                                <h2 class="text-muted" id="totalAlerts">0</h2>
+                                                <small class="text-muted">All alerts</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Active Alerts</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover" id="alertsTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Severity</th>
+                                                                <th>Message</th>
+                                                                <th>Source</th>
+                                                                <th>Time</th>
+                                                                <th>Status</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="alertsTableBody">
+                                                            <!-- Alert rows will be populated by JavaScript -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Analytics Tab -->
+                            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Transaction Patterns</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="transactionChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Retention</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="retentionChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Usage Peaks</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="peakUsageChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Feature Usage</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="chart-container">
+                                                    <canvas id="featureUsageChart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let currentMetrics = null;
+        let currentAnalytics = null;
+        let charts = {};
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            startRealTimeUpdates();
+        });
+
+        function initializeDashboard() {
+            loadMetrics();
+            loadAnalytics();
+            updateGlobalStatus();
+        }
+
+        function startRealTimeUpdates() {
+            // Update every 30 seconds
+            setInterval(() => {
+                loadMetrics();
+                loadAnalytics();
+                updateGlobalStatus();
+            }, 30000);
+
+            // Update alerts every 15 seconds
+            setInterval(() => {
+                loadAlerts();
+            }, 15000);
+        }
+
+        function loadMetrics() {
+            fetch('/api/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    currentMetrics = data;
+                    updateOverviewCards();
+                    updateCharts();
+                })
+                .catch(error => console.error('Error loading metrics:', error));
+        }
+
+        function loadAnalytics() {
+            fetch('/api/analytics')
+                .then(response => response.json())
+                .then(data => {
+                    currentAnalytics = data;
+                    updateAnalyticsCharts();
+                })
+                .catch(error => console.error('Error loading analytics:', error));
+        }
+
+        function loadAlerts() {
+            fetch('/api/alerts')
+                .then(response => response.json())
+                .then(data => {
+                    updateAlertsTab(data);
+                })
+                .catch(error => console.error('Error loading alerts:', error));
+        }
+
+        function updateOverviewCards() {
+            if (!currentMetrics) return;
+
+            // Update metric cards
+            document.getElementById('systemScore').textContent = currentMetrics.system_status.health_score + '%';
+            document.getElementById('tpsValue').textContent = currentMetrics.blockchain_status.tps;
+            document.getElementById('activeUsers').textContent = currentMetrics.flutter_status.active_users.toLocaleString();
+            document.getElementById('activeAlerts').textContent = currentMetrics.alert_summary.active;
+
+            // Update detailed values
+            document.getElementById('blockHeight').textContent = currentMetrics.blockchain_status.block_height.toLocaleString();
+            document.getElementById('tps').textContent = currentMetrics.blockchain_status.tps + ' TPS';
+            document.getElementById('validators').textContent = currentMetrics.blockchain_status.validator_count;
+            document.getElementById('totalUsers').textContent = currentMetrics.flutter_status.total_users.toLocaleString();
+            document.getElementById('activeSessions').textContent = currentMetrics.flutter_status.active_users.toLocaleString();
+            document.getElementById('avgSession').textContent = currentMetrics.flutter_status.avg_session_duration + 'm';
+            document.getElementById('appScore').textContent = currentMetrics.flutter_status.app_performance_score + '%';
+        }
+
+        function updateCharts() {
+            // Health Overview Chart
+            const healthCtx = document.getElementById('healthChart').getContext('2d');
+            new Chart(healthCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Healthy', 'Warnings', 'Critical'],
+                    datasets: [{
+                        data: [
+                            100 - currentMetrics.alert_summary.warnings - currentMetrics.alert_summary.critical,
+                            currentMetrics.alert_summary.warnings,
+                            currentMetrics.alert_summary.critical
+                        ],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Resource Usage Chart
+            const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+            new Chart(resourceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU', 'Memory', 'Disk', 'Network'],
+                    datasets: [{
+                        label: 'Usage (%)',
+                        data: [
+                            currentMetrics.system_status.cpu_usage,
+                            currentMetrics.system_status.memory_usage,
+                            currentMetrics.system_status.disk_usage,
+                            currentMetrics.system_status.network_io
+                        ],
+                        backgroundColor: '#007bff',
+                        borderColor: '#007bff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAnalyticsCharts() {
+            if (!currentAnalytics) return;
+
+            // Transaction Chart
+            const transactionCtx = document.getElementById('transactionChart').getContext('2d');
+            new Chart(transactionCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(currentAnalytics.transaction_metrics),
+                    datasets: [{
+                        label: 'Transactions',
+                        data: Object.values(currentAnalytics.transaction_metrics),
+                        backgroundColor: '#17a2b8',
+                        borderColor: '#17a2b8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Engagement Chart (simplified)
+            const engagementCtx = document.getElementById('engagementChart').getContext('2d');
+            new Chart(engagementCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Daily Active Users',
+                        data: [8500, 9200, 8800, 9500, 10200, 7800, 7200],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateAlertsTab(alertData) {
+            // Update alert counts
+            document.getElementById('criticalCount').textContent = alertData.summary.critical;
+            document.getElementById('warningCount').textContent = alertData.summary.warnings;
+            document.getElementById('infoCount').textContent = alertData.summary.active - alertData.summary.critical - alertData.summary.warnings;
+            document.getElementById('totalAlerts').textContent = alertData.summary.total;
+
+            // Update alerts table
+            const tbody = document.getElementById('alertsTableBody');
+            tbody.innerHTML = '';
+
+            alertData.alerts.forEach(alert => {
+                const row = document.createElement('tr');
+
+                let severityClass = 'table-info';
+                let severityBadge = '<span class="badge bg-info">Info</span>';
+                if (alert.severity === 'critical') {
+                    severityClass = 'table-danger';
+                    severityBadge = '<span class="badge bg-danger">Critical</span>';
+                } else if (alert.severity === 'warning') {
+                    severityClass = 'table-warning';
+                    severityBadge = '<span class="badge bg-warning text-dark">Warning</span>';
+                }
+
+                row.className = severityClass;
+                row.innerHTML = `
+                    <td>${severityBadge}</td>
+                    <td>${alert.message}</td>
+                    <td><small class="text-muted">${alert.source}</small></td>
+                    <td><small>${new Date(alert.timestamp).toLocaleString()}</small></td>
+                    <td><span class="badge bg-secondary">${alert.status}</span></td>
+                    <td>
+                        ${alert.status === 'active' ?
+                            `<button class="btn btn-sm btn-success btn-acknowledge" onclick="acknowledgeAlert('${alert.id}')">
+                                <i class="fas fa-check me-1"></i>Ack
+                            </button>` :
+                            '<span class="text-muted">Acknowledged</span>'}
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function acknowledgeAlert(alertId) {
+            fetch(`/api/alerts/ack/${alertId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        loadAlerts();
+                        showNotification('Alert acknowledged successfully', 'success');
+                    } else {
+                        throw new Error('Failed to acknowledge alert');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error acknowledging alert:', error);
+                    showNotification('Failed to acknowledge alert', 'error');
+                });
+        }
+
+        function updateGlobalStatus() {
+            const indicator = document.getElementById('globalStatus');
+            const text = document.getElementById('globalStatusText');
+
+            if (currentMetrics && currentMetrics.alert_summary.critical > 0) {
+                indicator.className = 'status-indicator status-critical pulse';
+                text.textContent = 'Critical Issues Detected';
+            } else if (currentMetrics && currentMetrics.alert_summary.warnings > 0) {
+                indicator.className = 'status-indicator status-warning pulse';
+                text.textContent = 'Warnings Detected';
+            } else {
+                indicator.className = 'status-indicator status-healthy pulse';
+                text.textContent = 'All Systems Operational';
+            }
+        }
+
+        function showNotification(message, type) {
+            // Simple notification implementation
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Load initial data
+        loadAlerts();
+    </script>
+</body>
+</html>
