@@ -11,14 +11,52 @@ export 'api_manager.dart' show ApiCallResponse;
 
 const _kPrivateApiFunctionName = 'ffPrivateApiCall';
 
-class PoscallCall {
-  static Future<ApiCallResponse> call() async {
+class BalanceCall {
+  static Future<ApiCallResponse> call({String? address}) async {
     return ApiManager.instance.makeApiCall(
-      callName: 'POSCALL',
-      apiUrl: 'https://posflow.onrender.com/ping/',
+      callName: 'BalanceCall',
+      apiUrl: 'http://localhost:3000/balance/$address',
       callType: ApiCallType.GET,
       headers: {},
       params: {},
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+}
+
+class TransactionsCall {
+  static Future<ApiCallResponse> call({String? address}) async {
+    return ApiManager.instance.makeApiCall(
+      callName: 'TransactionsCall',
+      apiUrl: 'http://localhost:3000/transactions/$address',
+      callType: ApiCallType.GET,
+      headers: {},
+      params: {},
+      returnBody: true,
+      encodeBodyUtf8: false,
+      decodeUtf8: false,
+      cache: false,
+      isStreamingApi: false,
+      alwaysAllowBody: false,
+    );
+  }
+}
+
+class SubmitTransactionCall {
+  static Future<ApiCallResponse> call({dynamic body}) async {
+    return ApiManager.instance.makeApiCall(
+      callName: 'SubmitTransactionCall',
+      apiUrl: 'http://localhost:3000/submit-transaction',
+      callType: ApiCallType.POST,
+      headers: {},
+      params: {},
+      body: body,
+      bodyType: BodyType.JSON,
       returnBody: true,
       encodeBodyUtf8: false,
       decodeUtf8: false,

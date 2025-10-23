@@ -116,6 +116,12 @@ class UserpageModel extends FlutterFlowModel<UserpageWidget> {
       choiceChipsWalletValueController?.value?.firstOrNull;
   set choiceChipsWalletValue(String? val) =>
       choiceChipsWalletValueController?.value = val != null ? [val] : [];
+  // State field(s) for TextField widget.
+  TextEditingController? textController1;
+  String? Function(BuildContext, String?)? textController1Validator;
+  // State field(s) for TextField widget.
+  TextEditingController? textController2;
+  String? Function(BuildContext, String?)? textController2Validator;
 
   /// Query cache managers for this widget.
 
@@ -157,6 +163,8 @@ class UserpageModel extends FlutterFlowModel<UserpageWidget> {
     tabBarController?.dispose();
     staggeredViewStreamSubscriptions1.forEach((s) => s?.cancel());
     staggeredViewPagingController1?.dispose();
+    textController1?.dispose();
+    textController2?.dispose();
 
     /// Dispose query cache managers for this widget.
 

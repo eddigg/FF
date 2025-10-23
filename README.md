@@ -50,3 +50,5 @@ The `cercaend` application uses both Firebase and Supabase. Ensure that the nece
 ### Components and UI Logic
 
 We will continue to work on developing shared components, UI logic, and design for `cercaend` to ensure seamless communication with the `atlas-blockchain` API. The goal is to create a robust bridge between the frontend and the blockchain.
+
+# Test commit to trigger submission
