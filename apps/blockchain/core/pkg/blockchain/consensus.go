@@ -9,11 +9,11 @@ import (
 	"sort"
 	"sync"
 	"time"
-	"atlas-blockchain/pkg/wallet"
-	"atlas-blockchain/pkg/transaction"
-	"atlas-blockchain/pkg/sharding"
-	"atlas-blockchain/pkg/block"
-	"atlas-blockchain/pkg/config"
+	"atlas-blockchain/core/pkg/wallet"
+	"atlas-blockchain/core/pkg/transaction"
+	"atlas-blockchain/core/pkg/sharding"
+	"atlas-blockchain/core/pkg/block"
+	"atlas-blockchain/core/pkg/config"
 )
 
 // Constants for consensus

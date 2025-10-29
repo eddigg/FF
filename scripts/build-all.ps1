@@ -3,7 +3,7 @@
 # Build blockchain
 Write-Host "Building blockchain..." -ForegroundColor Green
 Set-Location apps/blockchain
-go build -o ../bin/blockchain-node ./cmd
+go build -o ../bin/blockchain-node ./core/cmd
 Set-Location ../..
 
 # Build API Gateway
@@ -12,15 +12,15 @@ Set-Location integrations/api-gateway
 go build -o ../bin/api-gateway .
 Set-Location ../..
 
-# Build Flutter
-Write-Host "Building Flutter app..." -ForegroundColor Green
+# Build Flutter Web
+Write-Host "Building Flutter web app..." -ForegroundColor Green
 Set-Location apps/cercaend
 flutter pub get
-flutter build apk
+flutter build web
 Set-Location ../..
 
 # Generate protobuf files
 Write-Host "Generating protobuf files..." -ForegroundColor Green
-Set-Location shared
-protoc --dart_out=../apps/cercaend/lib/shared --go_out=../apps/blockchain/pkg proto/*.proto
-Set-Location ..
+Set-Location packages/api
+protoc --dart_out=../../apps/cercaend/lib/shared --go_out=../../apps/blockchain/pkg blockchain.proto
+Set-Location ../..

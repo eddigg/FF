@@ -13,12 +13,12 @@ import (
 	"sync"
 	"time"
 	"encoding/hex"
-	"atlas-blockchain/pkg/wallet"
-	"atlas-blockchain/pkg/transaction"
-	"atlas-blockchain/pkg/vm"
-	"atlas-blockchain/pkg/block"
-	"atlas-blockchain/pkg/database"
-	"atlas-blockchain/pkg/config"
+	"atlas-blockchain/core/pkg/wallet"
+	"atlas-blockchain/core/pkg/transaction"
+	"atlas-blockchain/core/pkg/vm"
+	"atlas-blockchain/core/pkg/block"
+	"atlas-blockchain/core/pkg/database"
+	"atlas-blockchain/core/pkg/config"
 )
 
 // StateSnapshot represents a point-in-time snapshot of the blockchain state

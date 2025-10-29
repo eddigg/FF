@@ -8,9 +8,9 @@ import (
 	"net"
 	"sync"
 	"time"
-	"atlas-blockchain/pkg/wallet"
-	"atlas-blockchain/pkg/transaction"
-	"atlas-blockchain/pkg/block"
+	"atlas-blockchain/core/pkg/wallet"
+	"atlas-blockchain/core/pkg/transaction"
+	"atlas-blockchain/core/pkg/block"
 )
 
 // Node represents a participant in the blockchain network.

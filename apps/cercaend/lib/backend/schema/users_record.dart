@@ -243,6 +243,36 @@ class UsersRecord extends FirestoreRecord {
   List<DocumentReference> get usersFollwoingMe => _usersFollwoingMe ?? const [];
   bool hasUsersFollwoingMe() => _usersFollwoingMe != null;
 
+  // "wallet_address" field.
+  String? _walletAddress;
+  String get walletAddress => _walletAddress ?? '';
+  bool hasWalletAddress() => _walletAddress != null;
+
+  // "encrypted_private_key" field.
+  String? _encryptedPrivateKey;
+  String get encryptedPrivateKey => _encryptedPrivateKey ?? '';
+  bool hasEncryptedPrivateKey() => _encryptedPrivateKey != null;
+
+  // "seed_phrase_hash" field.
+  String? _seedPhraseHash;
+  String get seedPhraseHash => _seedPhraseHash ?? '';
+  bool hasSeedPhraseHash() => _seedPhraseHash != null;
+
+  // "wallet_created_at" field.
+  DateTime? _walletCreatedAt;
+  DateTime? get walletCreatedAt => _walletCreatedAt;
+  bool hasWalletCreatedAt() => _walletCreatedAt != null;
+
+  // "wallet_backed_up" field.
+  bool? _walletBackedUp;
+  bool get walletBackedUp => _walletBackedUp ?? false;
+  bool hasWalletBackedUp() => _walletBackedUp != null;
+
+  // "wallet_recovery_email" field.
+  String? _walletRecoveryEmail;
+  String get walletRecoveryEmail => _walletRecoveryEmail ?? '';
+  bool hasWalletRecoveryEmail() => _walletRecoveryEmail != null;
+
   void _initializeFields() {
     _bio = snapshotData['bio'] as String?;
     _email = snapshotData['email'] as String?;
@@ -289,6 +319,12 @@ class UsersRecord extends FirestoreRecord {
     _userCredits = snapshotData['userCredits'] as DocumentReference?;
     _followingUsers = getDataList(snapshotData['following_users']);
     _usersFollwoingMe = getDataList(snapshotData['users_follwoing_me']);
+    _walletAddress = snapshotData['wallet_address'] as String?;
+    _encryptedPrivateKey = snapshotData['encrypted_private_key'] as String?;
+    _seedPhraseHash = snapshotData['seed_phrase_hash'] as String?;
+    _walletCreatedAt = snapshotData['wallet_created_at'] as DateTime?;
+    _walletBackedUp = snapshotData['wallet_backed_up'] as bool?;
+    _walletRecoveryEmail = snapshotData['wallet_recovery_email'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -353,6 +389,12 @@ Map<String, dynamic> createUsersRecordData({
   double? avgURating,
   int? ratings,
   DocumentReference? userCredits,
+  String? walletAddress,
+  String? encryptedPrivateKey,
+  String? seedPhraseHash,
+  DateTime? walletCreatedAt,
+  bool? walletBackedUp,
+  String? walletRecoveryEmail,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -384,6 +426,12 @@ Map<String, dynamic> createUsersRecordData({
       'avg_u_rating': avgURating,
       'ratings': ratings,
       'userCredits': userCredits,
+      'wallet_address': walletAddress,
+      'encrypted_private_key': encryptedPrivateKey,
+      'seed_phrase_hash': seedPhraseHash,
+      'wallet_created_at': walletCreatedAt,
+      'wallet_backed_up': walletBackedUp,
+      'wallet_recovery_email': walletRecoveryEmail,
     }.withoutNulls,
   );
 
@@ -440,7 +488,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         listEquality.equals(e1?.userRatings, e2?.userRatings) &&
         e1?.userCredits == e2?.userCredits &&
         listEquality.equals(e1?.followingUsers, e2?.followingUsers) &&
-        listEquality.equals(e1?.usersFollwoingMe, e2?.usersFollwoingMe);
+        listEquality.equals(e1?.usersFollwoingMe, e2?.usersFollwoingMe) &&
+        e1?.walletAddress == e2?.walletAddress &&
+        e1?.encryptedPrivateKey == e2?.encryptedPrivateKey &&
+        e1?.seedPhraseHash == e2?.seedPhraseHash &&
+        e1?.walletCreatedAt == e2?.walletCreatedAt &&
+        e1?.walletBackedUp == e2?.walletBackedUp &&
+        e1?.walletRecoveryEmail == e2?.walletRecoveryEmail;
   }
 
   @override
@@ -489,7 +543,13 @@ class UsersRecordDocumentEquality implements Equality<UsersRecord> {
         e?.userRatings,
         e?.userCredits,
         e?.followingUsers,
-        e?.usersFollwoingMe
+        e?.usersFollwoingMe,
+        e?.walletAddress,
+        e?.encryptedPrivateKey,
+        e?.seedPhraseHash,
+        e?.walletCreatedAt,
+        e?.walletBackedUp,
+        e?.walletRecoveryEmail
       ]);
 
   @override

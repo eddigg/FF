@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -72,7 +70,7 @@ func (g *APIGateway) handleBalance(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	address := vars["address"]
 
-	balance := g.blockManager.state.GetBalance(address)
+	balance := g.blockManager.GetBalance(address)
 	response := map[string]interface{}{
 		"address": address,
 		"balance": balance,

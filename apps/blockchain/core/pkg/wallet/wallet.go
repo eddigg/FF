@@ -8,7 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"sync"
-	"atlas-blockchain/pkg/transaction"
+	"atlas-blockchain/core/pkg/transaction"
 	"crypto/sha256"
 	"math/big"
 )

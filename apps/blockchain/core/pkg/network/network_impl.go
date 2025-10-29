@@ -6,8 +6,8 @@ import (
 	"log"
 	"net"
 	"time"
-	"atlas-blockchain/pkg/transaction"
-	"atlas-blockchain/pkg/block"
+	"atlas-blockchain/core/pkg/transaction"
+	"atlas-blockchain/core/pkg/block"
 )
 
 // PeerAnnounce represents a peer announcement message

@@ -9,10 +9,10 @@ import (
 	"log"
 	"sync"
 	"time"
-	"atlas-blockchain/pkg/block"
-	"atlas-blockchain/pkg/network"
-	"atlas-blockchain/pkg/transaction"
-	"atlas-blockchain/pkg/config"
+	"atlas-blockchain/core/pkg/block"
+	"atlas-blockchain/core/pkg/network"
+	"atlas-blockchain/core/pkg/transaction"
+	"atlas-blockchain/core/pkg/config"
 	"github.com/libp2p/go-libp2p/core/peer"
 )
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"atlas-blockchain/pkg/wallet"
+	"atlas-blockchain/core/pkg/wallet"
 	"encoding/hex"
-	"atlas-blockchain/pkg/block"
-	"atlas-blockchain/pkg/config"
+	"atlas-blockchain/core/pkg/block"
+	"atlas-blockchain/core/pkg/config"
 )
 
 // BlockManager handles block operations and state management
@@ -211,4 +211,9 @@ func (bm *BlockManager) GetBlocks(limit, offset int) []*block.Block {
 		end = len(bm.chain)
 	}
 	return bm.chain[offset:end]
-} 
+}
+
+// GetBalance returns the balance for a given address
+func (bm *BlockManager) GetBalance(address string) int64 {
+	return bm.state.GetBalance(address)
+}

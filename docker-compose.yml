@@ -24,12 +24,12 @@ services:
   cercaend-frontend:
     build: ./apps/cercaend
     ports:
-      - "5000:5000"
+      - "5000:80"
     depends_on:
       - api-gateway
     environment:
       - BLOCKCHAIN_API_URL=http://api-gateway:3000
-      - FIREBASE_CONFIG=${FIREBASE_CONFIG}
+      - FIREBASE_CONFIG={"apiKey":"AIzaSyB8W1785yBnfMAJZtQcJZ1GnPE97zAmL_Y","authDomain":"cercaend-vk8icg.firebaseapp.com","databaseURL":"https://cercaend-vk8icg-default-rtdb.firebaseio.com","projectId":"cercaend-vk8icg","storageBucket":"cercaend-vk8icg.appspot.com","messagingSenderId":"618504134340","appId":"1:618504134340:web:d3e2ff5b7908d248107391"}
 
 volumes:
   blockchain-data:

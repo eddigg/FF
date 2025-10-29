@@ -28,6 +28,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:provider/provider.dart';
+
+// Wallet imports
+import '/services/blockchain/wallet_provider.dart';
+import '/services/blockchain/transaction_model.dart' as blockchain;
+
 import 'userpage_model.dart';
 export 'userpage_model.dart';
 
@@ -68,10 +73,301 @@ class _UserpageWidgetState extends State<UserpageWidget>
     super.dispose();
   }
 
+  // Wallet setup intro screen
+  Widget _buildWalletSetupIntro(WalletProvider walletProvider) {
+    return Container(
+      padding: EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.account_balance_wallet,
+            size: 80.0,
+            color: FlutterFlowTheme.of(context).primary,
+          ),
+          SizedBox(height: 24.0),
+          Text(
+            'Create Your Wallet',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.0,
+            ),
+          ),
+          SizedBox(height: 16.0),
+          Text(
+            'Set up a secure wallet to manage your digital assets. Your wallet will be protected with a seed phrase that only you control.',
+            textAlign: TextAlign.center,
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+              letterSpacing: 0.0,
+            ),
+          ),
+          SizedBox(height: 32.0),
+          FFButtonWidget(
+            onPressed: walletProvider.isLoading ? null : () async {
+              await walletProvider.createWallet();
+            },
+            text: walletProvider.isLoading ? 'Creating...' : 'Create Wallet',
+            options: FFButtonOptions(
+              width: double.infinity,
+              height: 50.0,
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              color: FlutterFlowTheme.of(context).primary,
+              textStyle: FlutterFlowTheme.of(context).titleMedium.override(
+                color: Colors.white,
+                letterSpacing: 0.0,
+              ),
+              elevation: 2.0,
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Seed phrase backup screen
+  Widget _buildSeedPhraseBackup(WalletProvider walletProvider) {
+    return Container(
+      padding: EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Backup Your Seed Phrase',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.0,
+            ),
+          ),
+          SizedBox(height: 16.0),
+          Container(
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: FlutterFlowTheme.of(context).warning,
+                width: 1.0,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.warning,
+                  color: FlutterFlowTheme.of(context).warning,
+                ),
+                SizedBox(width: 12.0),
+                Expanded(
+                  child: Text(
+                    'Write down these words in order and store them safely. This is the only way to recover your wallet.',
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      letterSpacing: 0.0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 24.0),
+          Container(
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: FlutterFlowTheme.of(context).alternate,
+                width: 1.0,
+              ),
+            ),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: walletProvider.seedPhrase.asMap().entries.map((entry) {
+                int index = entry.key;
+                String word = entry.value;
+                return Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).alternate,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: Text(
+                    '${index + 1}. $word',
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.0,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          Spacer(),
+          FFButtonWidget(
+            onPressed: () async {
+              await walletProvider.confirmSeedPhraseBackup();
+            },
+            text: 'I\'ve Saved My Seed Phrase',
+            options: FFButtonOptions(
+              width: double.infinity,
+              height: 50.0,
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              color: FlutterFlowTheme.of(context).primary,
+              textStyle: FlutterFlowTheme.of(context).titleMedium.override(
+                color: Colors.white,
+                letterSpacing: 0.0,
+              ),
+              elevation: 2.0,
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Wallet management screen
+  Widget _buildWalletManagement(WalletProvider walletProvider) {
+    return Container(
+      padding: EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Wallet',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.0,
+            ),
+          ),
+          SizedBox(height: 24.0),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  FlutterFlowTheme.of(context).primary,
+                  FlutterFlowTheme.of(context).secondary,
+                ],
+                stops: [0.0, 1.0],
+                begin: AlignmentDirectional(-1.0, -1.0),
+                end: AlignmentDirectional(1.0, 1.0),
+              ),
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Balance',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    color: Colors.white.withOpacity(0.8),
+                    letterSpacing: 0.0,
+                  ),
+                ),
+                SizedBox(height: 8.0),
+                FutureBuilder<double>(
+                  future: walletProvider.getWalletBalance(),
+                  builder: (context, snapshot) {
+                    return Text(
+                      '${snapshot.data ?? 0.0} ETH',
+                      style: FlutterFlowTheme.of(context).headlineLarge.override(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.0,
+                      ),
+                    );
+                  },
+                ),
+                SizedBox(height: 16.0),
+                Text(
+                  'Address',
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    color: Colors.white.withOpacity(0.8),
+                    letterSpacing: 0.0,
+                  ),
+                ),
+                SizedBox(height: 4.0),
+                Text(
+                  walletProvider.walletAddress ?? '',
+                  style: FlutterFlowTheme.of(context).bodySmall.override(
+                    color: Colors.white,
+                    fontFamily: 'monospace',
+                    letterSpacing: 0.0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 24.0),
+          Row(
+            children: [
+              Expanded(
+                child: FFButtonWidget(
+                  onPressed: () {
+                    // TODO: Implement send functionality
+                  },
+                  text: 'Send',
+                  icon: Icon(
+                    Icons.send,
+                    size: 20.0,
+                  ),
+                  options: FFButtonOptions(
+                    height: 50.0,
+                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    color: FlutterFlowTheme.of(context).primary,
+                    textStyle: FlutterFlowTheme.of(context).titleMedium.override(
+                      color: Colors.white,
+                      letterSpacing: 0.0,
+                    ),
+                    elevation: 2.0,
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+              ),
+              SizedBox(width: 16.0),
+              Expanded(
+                child: FFButtonWidget(
+                  onPressed: () {
+                    // TODO: Implement receive functionality
+                  },
+                  text: 'Receive',
+                  icon: Icon(
+                    Icons.qr_code,
+                    size: 20.0,
+                  ),
+                  options: FFButtonOptions(
+                    height: 50.0,
+                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                    textStyle: FlutterFlowTheme.of(context).titleMedium.override(
+                      color: FlutterFlowTheme.of(context).primaryText,
+                      letterSpacing: 0.0,
+                    ),
+                    elevation: 2.0,
+                    borderRadius: BorderRadius.circular(12.0),
+                    side: BorderSide(
+                      color: FlutterFlowTheme.of(context).alternate,
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -1449,9 +1745,9 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                         .bodyMedium
                                                                         .fontWeight,
                                                                     fontStyle: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .bodyMedium
-                                                                        .fontStyle,
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
                                                                   ),
                                                           iconColor:
                                                               FlutterFlowTheme.of(
@@ -1648,8 +1944,7 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                         FlutterFlowTheme.of(context).primary,
                                                                                       ),
                                                                                     ),
-                                                                                  ),
-                                                                                );
+                                                                                  );
                                                                               }
 
                                                                               final circleImageUsersRecord = snapshot.data!;
@@ -1906,6 +2201,7 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                   fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
                                                                                 ),
                                                                             elevation:
+
                                                                                 0.0,
                                                                             borderRadius:
                                                                                 BorderRadius.circular(8.0),
@@ -7206,205 +7502,67 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                 ],
                                               ),
                                             ),
-                                            if (_model.choiceChipsWalletValue ==
-                                                'Book')
-                                              Container(
-                                                width: 500.0,
-                                                height: 460.0,
-                                                constraints: BoxConstraints(
-                                                  maxWidth: 570.0,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8.0),
-                                                ),
-                                                child: Padding(
-                                                  padding: EdgeInsets.all(12.0),
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    8.0,
-                                                                    4.0,
-                                                                    8.0,
-                                                                    12.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
+                                            if (_model.choiceChipsWalletValue == 'Account')
+                                              Padding(
+                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+                                                child: Container(
+                                                  width: 500.0,
+                                                  height: 600.0,
+                                                  constraints: BoxConstraints(maxWidth: 570.0),
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(context).alternate,
+                                                    borderRadius: BorderRadius.circular(8.0),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(12.0),
+                                                    child: Container(padding: EdgeInsets.all(24.0), child: Center(child: Text('Wallet Coming Soon', style: TextStyle(fontSize: 18.0)))) {
+                                                          return _buildSeedPhraseBackup(walletProvider);
+                                                        } else if (walletProvider.state == WalletCreationState.completed) {
+                                                          return _buildWalletManagement(walletProvider);
+                                                        } else if (walletProvider.state == WalletCreationState.error) {
+                                                          return Center(
+                                                            child: Column(
+                                                              mainAxisAlignment: MainAxisAlignment.center,
                                                               children: [
+                                                                Icon(
+                                                                  Icons.error_outline,
+                                                                  size: 64.0,
+                                                                  color: FlutterFlowTheme.of(context).error,
+                                                                ),
+                                                                SizedBox(height: 16.0),
                                                                 Text(
-                                                                  FFLocalizations.of(
-                                                                          context)
-                                                                      .getText(
-                                                                    '5en137ce' /* Transaction history */,
-                                                                  ),
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .end,
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineSmall
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .montserrat(
-                                                                          fontWeight:
-                                                                              FontWeight.w600,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .headlineSmall
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondaryText,
-                                                                        fontSize:
-                                                                            20.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w600,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .headlineSmall
-                                                                            .fontStyle,
-                                                                      ),
+                                                                  walletProvider.errorMessage ?? 'An error occurred',
+                                                                  textAlign: TextAlign.center,
+                                                                  style: FlutterFlowTheme.of(context).bodyMedium,
                                                                 ),
-                                                                Text(
-                                                                  FFLocalizations.of(
-                                                                          context)
-                                                                      .getText(
-                                                                    'vn7r2tpm' /* A list of historical transacti... */,
-                                                                  ),
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .labelMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .plusJakartaSans(
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .labelMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        color: Color(
-                                                                            0xFF606A85),
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .labelMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  height: 4.0)),
-                                                            ),
-                                                            Container(
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .secondaryBackground,
-                                                                shape: BoxShape
-                                                                    .circle,
-                                                              ),
-                                                              child: ToggleIcon(
-                                                                onPressed:
-                                                                    () async {
-                                                                  safeSetState(() =>
-                                                                      _model.trsIsSent =
-                                                                          !_model
-                                                                              .trsIsSent);
-                                                                },
-                                                                value: _model
-                                                                    .trsIsSent,
-                                                                onIcon: Icon(
-                                                                  Icons
-                                                                      .arrow_drop_up_rounded,
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondary,
-                                                                  size: 26.0,
-                                                                ),
-                                                                offIcon: Icon(
-                                                                  Icons
-                                                                      .arrow_drop_down,
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .success,
-                                                                  size: 26.0,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ].divide(SizedBox(
-                                                              width: 8.0)),
-                                                        ),
-                                                      ),
-                                                      if (_model.trsIsSent ==
-                                                          true)
-                                                        FutureBuilder<
-                                                            ApiCallResponse>(
-                                                          future:
-                                                              TransactionsCall
-                                                                  .call(),
-                                                          builder: (context,
-                                                              snapshot) {
-                                                            // Customize what your widget looks like when it's loading.
-                                                            if (!snapshot
-                                                                .hasData) {
-                                                              return Center(
-                                                                child: SizedBox(
-                                                                  width: 50.0,
-                                                                  height: 50.0,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    valueColor:
-                                                                        AlwaysStoppedAnimation<
-                                                                            Color>(
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .primary,
+                                                                SizedBox(height: 24.0),
+                                                                FFButtonWidget(
+                                                                  onPressed: () {
+                                                                    walletProvider.resetWalletCreation();
+                                                                  },
+                                                                  text: 'Try Again',
+                                                                  options: FFButtonOptions(
+                                                                    height: 40.0,
+                                                                    padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
+                                                                    color: FlutterFlowTheme.of(context).primary,
+                                                                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                                      color: Colors.white,
+                                                                      letterSpacing: 0.0,
                                                                     ),
+                                                                    borderRadius: BorderRadius.circular(8.0),
                                                                   ),
                                                                 ),
-                                                              );
-                                                            }
-                                                            final listViewTransactionsResponse =
-                                                                snapshot.data!;
-                                                            return Builder(
-                                                              builder:
-                                                                  (context) {
-                                                                final transactions =
-                                                                    getJsonField(
-                                                                  listViewTransactionsResponse
-                                                                      .jsonBody,
-                                                                  r'''$.transactions''',
-                                                                ).toList().where((t) => getJsonField(t, r'''$.sender''') == "0x70997970C51812dc3A010C7d01b50e0d17dc79C8").toList();
-                                                                return ListView
-                                                                    .separated(
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .fromLTRB(
+                                                              ],
+                                                            ),
+                                                          );
+                                                        } else {
+                                                          return Center(child: CircularProgressIndicator());
+                                                        }
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
                                                                     0,
                                                                     12.0,
                                                                     0,
@@ -7667,7 +7825,7 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                                           ),
                                                                                                           fontSize: 12.0,
                                                                                                           letterSpacing: 0.0,
-                                                                                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                                          fontWeight: FontWeight.w500,
                                                                                                           fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                                         ),
                                                                                                   ),
@@ -7774,140 +7932,76 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                             );
                                                           },
                                                         ),
-                                                      if (_model.trsIsSent ==
-                                                          false)
-                                                        FutureBuilder<
-                                                            ApiCallResponse>(
-                                                          future:
-                                                              TransactionsCall
-                                                                  .call(),
-                                                          builder: (context,
-                                                              snapshot) {
+                                                      if (_model.trsIsSent == false)
+                                                        FutureBuilder<ApiCallResponse>(
+                                                          future: TransactionsCall.call(),
+                                                          builder: (context, snapshot) {
                                                             // Customize what your widget looks like when it's loading.
-                                                            if (!snapshot
-                                                                .hasData) {
+                                                            if (!snapshot.hasData) {
                                                               return Center(
                                                                 child: SizedBox(
                                                                   width: 50.0,
                                                                   height: 50.0,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    valueColor:
-                                                                        AlwaysStoppedAnimation<
-                                                                            Color>(
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .primary,
+                                                                  child: CircularProgressIndicator(
+                                                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                                                      FlutterFlowTheme.of(context).primary,
                                                                     ),
                                                                   ),
                                                                 ),
                                                               );
                                                             }
-                                                            final listViewTransactionsResponse =
-                                                                snapshot.data!;
+                                                            final listViewTransactionsResponse = snapshot.data!;
                                                             return Builder(
-                                                              builder:
-                                                                  (context) {
-                                                                final transactions =
-                                                                    getJsonField(
-                                                                  listViewTransactionsResponse
-                                                                      .jsonBody,
+                                                              builder: (context) {
+                                                                final transactions = getJsonField(
+                                                                  listViewTransactionsResponse.jsonBody,
                                                                   r'''$.transactions''',
                                                                 ).toList().where((t) => getJsonField(t, r'''$.recipient''') == "0x70997970C51812dc3A010C7d01b50e0d17dc79C8").toList();
-                                                                return ListView
-                                                                    .separated(
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .fromLTRB(
-                                                                    0,
-                                                                    12.0,
-                                                                    0,
-                                                                    12.0,
-                                                                  ),
-                                                                  shrinkWrap:
-                                                                      true,
-                                                                  scrollDirection:
-                                                                      Axis.vertical,
-                                                                  itemCount:
-                                                                      transactions
-                                                                          .length,
-                                                                  separatorBuilder:
-                                                                      (_,
-                                                                          __) =>
-                                                                          SizedBox(
-                                                                              height: 8.0),
-                                                                  itemBuilder:
-                                                                      (context,
-                                                                          listViewIndex) {
-                                                                    final listViewTransactionsRecord =
-                                                                        transactions[
-                                                                            listViewIndex];
+                                                                return ListView.separated(
+                                                                  padding: EdgeInsets.fromLTRB(0, 12.0, 0, 12.0),
+                                                                  shrinkWrap: true,
+                                                                  scrollDirection: Axis.vertical,
+                                                                  itemCount: transactions.length,
+                                                                  separatorBuilder: (_, __) => SizedBox(height: 8.0),
+                                                                  itemBuilder: (context, listViewIndex) {
+                                                                    final listViewTransactionsRecord = transactions[listViewIndex];
                                                                     return Container(
                                                                       width: 100.0,
                                                                       height: 80.0,
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: FlutterFlowTheme.of(
-                                                                                context)
-                                                                            .secondaryBackground,
+                                                                      decoration: BoxDecoration(
+                                                                        color: FlutterFlowTheme.of(context).secondaryBackground,
                                                                         boxShadow: [
                                                                           BoxShadow(
-                                                                            blurRadius:
-                                                                                0.0,
-                                                                            color: Color(
-                                                                                0xFFE5E7EB),
-                                                                            offset:
-                                                                                Offset(
-                                                                              0.0,
-                                                                              1.0,
-                                                                            ),
+                                                                            blurRadius: 0.0,
+                                                                            color: Color(0xFFE5E7EB),
+                                                                            offset: Offset(0.0, 1.0),
                                                                           )
                                                                         ],
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                                8.0),
+                                                                        borderRadius: BorderRadius.circular(8.0),
                                                                       ),
                                                                       child: Row(
-                                                                        mainAxisSize:
-                                                                            MainAxisSize
-                                                                                .max,
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment
-                                                                                .spaceBetween,
+                                                                        mainAxisSize: MainAxisSize.max,
+                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                         children: [
                                                                           Container(
-                                                                            width:
-                                                                                60.0,
-                                                                            height:
-                                                                                100.0,
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              color:
-                                                                                  FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              borderRadius:
-                                                                                  BorderRadius.circular(12.0),
+                                                                            width: 60.0,
+                                                                            height: 100.0,
+                                                                            decoration: BoxDecoration(
+                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                              borderRadius: BorderRadius.circular(12.0),
                                                                             ),
-                                                                            child:
-                                                                                Icon(
-                                                                              Icons
-                                                                                  .arrow_drop_down,
-                                                                              color:
-                                                                                  FlutterFlowTheme.of(context).success,
-                                                                              size:
-                                                                                  24.0,
+                                                                            child: Icon(
+                                                                              Icons.arrow_drop_up,
+                                                                              color: FlutterFlowTheme.of(context).secondary,
+                                                                              size: 24.0,
                                                                             ),
                                                                           ),
                                                                           Expanded(
-                                                                            child:
-                                                                                Padding(
-                                                                              padding:
-                                                                                  EdgeInsets.all(4.0),
-                                                                              child:
-                                                                                  StreamBuilder<UsersRecord>(
-                                                                                stream:
-                                                                                    UsersRecord.getDocument(currentUserReference!),
-                                                                                builder:
-                                                                                    (context, snapshot) {
+                                                                            child: Padding(
+                                                                              padding: EdgeInsets.all(4.0),
+                                                                              child: StreamBuilder<UsersRecord>(
+                                                                                stream: UsersRecord.getDocument(currentUserReference!),
+                                                                                builder: (context, snapshot) {
                                                                                   // Customize what your widget looks like when it's loading.
                                                                                   if (!snapshot.hasData) {
                                                                                     return Center(
@@ -7940,7 +8034,7 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                                 children: [
                                                                                                   TextSpan(
                                                                                                     text: FFLocalizations.of(context).getText(
-                                                                                                      '8o1mx6c6' /* Reciever:  */,
+                                                                                                      'bdfckyy1' /* Reciever:  */,
                                                                                                     ),
                                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                           font: GoogleFonts.inter(
@@ -7982,6 +8076,27 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                                     ),
                                                                                               ),
                                                                                             ),
+                                                                                            Align(
+                                                                                              alignment: AlignmentDirectional(1.0, 0.0),
+                                                                                              child: Padding(
+                                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+                                                                                                child: Text(
+                                                                                                  getJsonField(
+                                                                                                    listViewTransactionsRecord,
+                                                                                                    r'''$.date''',
+                                                                                                  ).toString(),
+                                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                        font: GoogleFonts.inter(
+                                                                                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                                        ),
+                                                                                                        letterSpacing: 0.0,
+                                                                                                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                                      ),
+                                                                                                ),
+                                                                                              ),
+                                                                                            ),
                                                                                           ],
                                                                                         ),
                                                                                       ),
@@ -7996,11 +8111,11 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                                 children: [
                                                                                                   TextSpan(
                                                                                                     text: FFLocalizations.of(context).getText(
-                                                                                                      'ufvv30se' /* Sender:  */,
+                                                                                                      'glhf9f71' /* Sender:  */,
                                                                                                     ),
                                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                           font: GoogleFonts.inter(
-                                                                                                            fontWeight: FontWeight.w500,
+                                                                                                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                                                                             fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                                           ),
                                                                                                           fontSize: 12.0,
@@ -8051,7 +8166,7 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                                 children: [
                                                                                                   TextSpan(
                                                                                                     text: FFLocalizations.of(context).getText(
-                                                                                                      'lmanv682' /* ORDER I.D.  # */,
+                                                                                                      'czwg08jc' /* ORDER I.D.  # */,
                                                                                                     ),
                                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                           font: GoogleFonts.inter(
@@ -8060,7 +8175,7 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                                           ),
                                                                                                           fontSize: 12.0,
                                                                                                           letterSpacing: 0.0,
-                                                                                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                                          fontWeight: FontWeight.w500,
                                                                                                           fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                                         ),
                                                                                                   ),
@@ -8099,63 +8214,44 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                                                       Expanded(
                                                                                         child: Row(
                                                                                           mainAxisSize: MainAxisSize.max,
-                                                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                          mainAxisAlignment: MainAxisAlignment.end,
                                                                                           children: [
-                                                                                            RichText(
-                                                                                              textScaler: MediaQuery.of(context).textScaler,
-                                                                                              text: TextSpan(
-                                                                                                children: [
-                                                                                                  TextSpan(
-                                                                                                    text: FFLocalizations.of(context).getText(
-                                                                                                      'icfn8zgw' /* REF :  */,
-                                                                                                    ),
-                                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                          font: GoogleFonts.inter(
+                                                                                            Padding(
+                                                                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
+                                                                                              child: RichText(
+                                                                                                textScaler: MediaQuery.of(context).textScaler,
+                                                                                                text: TextSpan(
+                                                                                                  children: [
+                                                                                                    TextSpan(
+                                                                                                      text: FFLocalizations.of(context).getText(
+                                                                                                        'rzrzheb1' /* REF :  */,
+                                                                                                      ),
+                                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                            font: GoogleFonts.inter(
+                                                                                                              fontWeight: FontWeight.w500,
+                                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                                            ),
+                                                                                                            letterSpacing: 0.0,
                                                                                                             fontWeight: FontWeight.w500,
                                                                                                             fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                                           ),
-                                                                                                          letterSpacing: 0.0,
-                                                                                                          fontWeight: FontWeight.w500,
-                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                        ),
-                                                                                                  ),
-                                                                                                  TextSpan(
-                                                                                                    text: getJsonField(
-                                                                                                      listViewTransactionsRecord,
-                                                                                                      r'''$.amount''',
-                                                                                                    ).toString(),
-                                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                          font: GoogleFonts.inter(
+                                                                                                    ),
+                                                                                                    TextSpan(
+                                                                                                      text: getJsonField(
+                                                                                                        listViewTransactionsRecord,
+                                                                                                        r'''$.amount''',
+                                                                                                      ).toString(),
+                                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                            font: GoogleFonts.inter(
+                                                                                                              fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                                            ),
+                                                                                                            letterSpacing: 0.0,
                                                                                                             fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
                                                                                                             fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
                                                                                                           ),
-                                                                                                          letterSpacing: 0.0,
-                                                                                                          fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                          fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                        ),
-                                                                                                  )
-                                                                                                ],
-                                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                      font: GoogleFonts.inter(
-                                                                                                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                      ),
-                                                                                                      letterSpacing: 0.0,
-                                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                    ),
-                                                                                              ),
-                                                                                            ),
-                                                                                            Align(
-                                                                                              alignment: AlignmentDirectional(1.0, 0.0),
-                                                                                              child: Padding(
-                                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 8.0, 0.0),
-                                                                                                child: Text(
-                                                                                                  dateTimeFormat(
-                                                                                                    "relative",
-                                                                                                    listViewTransactionsRecord.date!,
-                                                                                                    locale: FFLocalizations.of(context).languageShortCode ?? FFLocalizations.of(context).languageCode,
-                                                                                                  ),
+                                                                                                    )
+                                                                                                  ],
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         font: GoogleFonts.inter(
                                                                                                           fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
@@ -8190,521 +8286,963 @@ class _UserpageWidgetState extends State<UserpageWidget>
                                                   ),
                                                 ),
                                               ),
-                                            if (_model.choiceChipsWalletValue ==
-                                                'Methods')
-                                              Container(
-                                                width: 300.0,
-                                                height: 460.0,
-                                                decoration: BoxDecoration(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .alternate,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius: 4.0,
-                                                      color: Color(0x33000000),
-                                                      offset: Offset(
-                                                        0.0,
-                                                        2.0,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWalletManagement(WalletProvider walletProvider) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // Wallet Header with Balance
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  FlutterFlowTheme.of(context).primary,
+                  FlutterFlowTheme.of(context).secondary,
+                ],
+                stops: [0.0, 1.0],
+                begin: AlignmentDirectional(0.94, -1.0),
+                end: AlignmentDirectional(-0.94, 1.0),
+              ),
+              borderRadius: BorderRadius.circular(16.0),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 4.0,
+                  color: Color(0x33000000),
+                  offset: Offset(0.0, 2.0),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  Text(
+                    'Total Balance',
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          color: FlutterFlowTheme.of(context).info,
+                        ),
+                  ),
+                  if (walletProvider.isLoading)
+                    SizedBox(
+                      width: 32.0,
+                      height: 32.0,
+                      child: CircularProgressIndicator(
+                        color: FlutterFlowTheme.of(context).info,
+                      ),
+                    )
+                  else
+                    Text(
+                      '\$${walletProvider.balance.toStringAsFixed(2)}',
+                      style: FlutterFlowTheme.of(context).displayLarge.override(
+                            color: FlutterFlowTheme.of(context).info,
+                          ),
+                    ),
+                  SizedBox(height: 8.0),
+                  if (walletProvider.currentAddress != null)
+                    Text(
+                      '${walletProvider.currentAddress!.substring(0, 6)}...${walletProvider.currentAddress!.substring(walletProvider.currentAddress!.length - 4)}',
+                      style: FlutterFlowTheme.of(context).bodySmall.override(
+                            color: FlutterFlowTheme.of(context).alternate,
+                          ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 24.0),
+
+          // Action Buttons
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).alternate,
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildActionButton(
+                    icon: Icons.send,
+                    label: 'Send',
+                    onTap: () {
+                      // Implement send functionality
+                      _showSendDialog(walletProvider);
+                    },
+                  ),
+                  _buildActionButton(
+                    icon: Icons.receive,
+                    label: 'Receive',
+                    onTap: () {
+                      // Implement receive functionality
+                      _showReceiveDialog(walletProvider);
+                    },
+                  ),
+                  _buildActionButton(
+                    icon: Icons.history,
+                    label: 'History',
+                    onTap: () {
+                      // Implement history functionality
+                      _showTransactionHistory(walletProvider);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 24.0),
+
+          // Recent Transactions
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).alternate,
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Recent Transactions',
+                    style: FlutterFlowTheme.of(context).headlineSmall,
+                  ),
+                  SizedBox(height: 16.0),
+                  if (walletProvider.isLoading)
+                    Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  else if (walletProvider.transactions.isEmpty)
+                    Center(
+                      child: Text(
+                        'No transactions yet',
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: walletProvider.transactions.take(5).length,
+                      itemBuilder: (context, index) {
+                        final transaction = walletProvider.transactions[index];
+                        return _buildTransactionItem(transaction, walletProvider);
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 24.0),
+
+          // Disconnect Wallet Button
+          FFButtonWidget(
+            onPressed: () {
+              // Reset wallet state
+              walletProvider.checkWalletExistence();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Wallet Creation and Management Methods
+  Widget _buildWalletSetupIntro(WalletProvider walletProvider) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.account_balance_wallet,
+            size: 64.0,
+            color: FlutterFlowTheme.of(context).primary,
+          ),
+          SizedBox(height: 24.0),
+          Text(
+            'Create Your Wallet',
+            style: FlutterFlowTheme.of(context).headlineMedium,
+          ),
+          SizedBox(height: 12.0),
+          Text(
+            'Create a secure cryptocurrency wallet to send and receive payments',
+            textAlign: TextAlign.center,
+            style: FlutterFlowTheme.of(context).bodyMedium,
+          ),
+          SizedBox(height: 32.0),
+          FFButtonWidget(
+            onPressed: () async {
+              final success = await walletProvider.startWalletCreation();
+              if (!success && walletProvider.errorMessage != null) {
+                // Show error dialog
+                await showDialog(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: Text('Wallet Creation Failed'),
+                    content: Text(walletProvider.errorMessage!),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+            text: 'Create Wallet',
+            options: FFButtonOptions(
+              width: 200.0,
+              height: 44.0,
+              padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+              color: FlutterFlowTheme.of(context).primary,
+              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                    fontFamily: FlutterFlowTheme.of(context).titleSmallFamily,
+                    color: Colors.white,
+                    fontSize: 16.0,
+                    letterSpacing: 0.0,
+                    fontWeight: FontWeight.normal,
+                  ),
+              elevation: 2.0,
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+          ),
+          SizedBox(height: 16.0),
+          Text(
+            'By creating a wallet, you agree to our Terms of Service and Privacy Policy',
+            textAlign: TextAlign.center,
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeedPhraseBackup(WalletProvider walletProvider) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.lock,
+            size: 64.0,
+            color: FlutterFlowTheme.of(context).primary,
+          ),
+          SizedBox(height: 24.0),
+          Text(
+            'Backup Your Seed Phrase',
+            style: FlutterFlowTheme.of(context).headlineMedium,
+          ),
+          SizedBox(height: 12.0),
+          Text(
+            'Write down these 12 words and store them in a secure location. Anyone with these words can access your wallet.',
+            textAlign: TextAlign.center,
+            style: FlutterFlowTheme.of(context).bodyMedium,
+          ),
+          SizedBox(height: 24.0),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).alternate,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: SelectableText(
+              walletProvider.seedPhrase ?? '',
+              textAlign: TextAlign.center,
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    fontFamily: GoogleFonts.robotoMono().fontFamily,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+          SizedBox(height: 24.0),
+          Text(
+            '⚠️ Never share your seed phrase with anyone!',
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  color: FlutterFlowTheme.of(context).error,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          SizedBox(height: 24.0),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FFButtonWidget(
+                onPressed: () {
+                  // Reset wallet creation flow
+                  walletProvider.resetWalletCreation();
+                },
+                text: 'Cancel',
+                options: FFButtonOptions(
+                  width: 120.0,
+                  height: 44.0,
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                        fontFamily:
+                            FlutterFlowTheme.of(context).titleSmallFamily,
+                        color: FlutterFlowTheme.of(context).primaryText,
+                        fontSize: 16.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.normal,
+                      ),
+                  elevation: 2.0,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+              SizedBox(width: 16.0),
+              FFButtonWidget(
+                onPressed: () async {
+                  // Confirm seed phrase backup
+                  final success = await walletProvider.confirmSeedPhraseBackup();
+                  if (!success && walletProvider.errorMessage != null) {
+                    // Show error dialog
+                    await showDialog(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        title: Text('Confirmation Failed'),
+                        content: Text(walletProvider.errorMessage!),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            child: Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+                text: 'I\'ve Backed It Up',
+                options: FFButtonOptions(
+                  width: 180.0,
+                  height: 44.0,
+                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                  color: FlutterFlowTheme.of(context).primary,
+                  textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                        fontFamily:
+                            FlutterFlowTheme.of(context).titleSmallFamily,
+                        color: Colors.white,
+                        fontSize: 16.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.normal,
+                      ),
+                  elevation: 2.0,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 60.0,
+            height: 60.0,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: FlutterFlowTheme.of(context).primary,
+            ),
+            child: Icon(
+              icon,
+              color: FlutterFlowTheme.of(context).info,
+              size: 24.0,
+            ),
+          ),
+          SizedBox(height: 8.0),
+          Text(
+            label,
+            style: FlutterFlowTheme.of(context).bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSendDialog(WalletProvider walletProvider) {
+    final recipientController = TextEditingController();
+    final amountController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Send Transaction'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: recipientController,
+              decoration: InputDecoration(
+                labelText: 'Recipient Address',
+              ),
+            ),
+            SizedBox(height: 16.0),
+            TextField(
+              controller: amountController,
+              decoration: InputDecoration(
+                labelText: 'Amount',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final recipient = recipientController.text;
+              final amount = double.tryParse(amountController.text);
+
+              if (recipient.isEmpty || amount == null || amount <= 0) {
+                // Show error
+                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  SnackBar(content: Text('Please enter valid recipient and amount')),
+                );
+                return;
+              }
+
+              Navigator.of(dialogContext).pop();
+
+              final success = await walletProvider.submitTransaction(
+                recipient: recipient,
+                amount: amount,
+              );
+
+              if (!success) {
+                // Show error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(walletProvider.errorMessage ?? 'Transaction failed')),
+                );
+              } else {
+                // Show success
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Transaction submitted successfully')),
+                );
+              }
+            },
+            child: Text('Send'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReceiveDialog(WalletProvider walletProvider) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Receive Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (walletProvider.currentAddress != null) ...[
+              Text(
+                'Share this address to receive payments:',
+                style: FlutterFlowTheme.of(context).bodyMedium,
+              ),
+              SizedBox(height: 16.0),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).alternate,
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: SelectableText(
+                  walletProvider.currentAddress!,
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: GoogleFonts.robotoMono().fontFamily,
+                      ),
+                ),
+              ),
+              SizedBox(height: 16.0),
+              Text(
+                '⚠️ Only share this address with trusted parties',
+                style: FlutterFlowTheme.of(context).bodySmall.override(
+                      color: FlutterFlowTheme.of(context).error,
+                    ),
+              ),
+            ] else
+              Text('Wallet address not available'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTransactionHistory(WalletProvider walletProvider) {
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => Container(
+        height: 500.0,
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text(
+              'Transaction History',
+              style: FlutterFlowTheme.of(context).headlineSmall,
+            ),
+            SizedBox(height: 16.0),
+            if (walletProvider.isLoading)
+              Center(
+                child: CircularProgressIndicator(),
+              )
+            else if (walletProvider.transactions.isEmpty)
+              Center(
+                child: Text(
+                  'No transactions yet',
+                  style: FlutterFlowTheme.of(context).bodyMedium,
+                ),
+              )
+            else
+              Expanded(
+                child: ListView.builder(
+                  itemCount: walletProvider.transactions.length,
+                  itemBuilder: (context, index) {
+                    final transaction = walletProvider.transactions[index];
+                    return _buildTransactionItem(transaction, walletProvider);
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(blockchain.TransactionModel transaction, WalletProvider walletProvider) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.0),
+      margin: EdgeInsets.only(bottom: 12.0),
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x1A000000),
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                transaction.type == 'sent' ? 'Sent' : 'Received',
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              Text(
+                formatNumber(
+                  transaction.amount,
+                  formatType: FormatType.decimal,
+                  decimalType: DecimalType.automatic,
+                ),
+                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                      color: transaction.type == 'sent' 
+                          ? FlutterFlowTheme.of(context).error 
+                          : FlutterFlowTheme.of(context).success,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.0),
+          Text(
+            'To: ${transaction.toAddress.substring(0, 6)}...${transaction.toAddress.substring(transaction.toAddress.length - 4)}',
+            style: FlutterFlowTheme.of(context).bodySmall,
+          ),
+          SizedBox(height: 4.0),
+          Text(
+            'Date: ${transaction.timestamp.toLocal().toString().split(' ')[0]}',
+            style: FlutterFlowTheme.of(context).bodySmall.override(
+                  color: FlutterFlowTheme.of(context).secondaryText,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionList(WalletProvider walletProvider) {
+    final transactions = walletProvider.transactions;
+    if (transactions.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history,
+              size: 48.0,
+              color: FlutterFlowTheme.of(context).secondaryText,
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              'No transactions yet',
+              style: FlutterFlowTheme.of(context).bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.fromLTRB(0, 12.0, 0, 12.0),
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      itemCount: transactions.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.0),
+      itemBuilder: (context, index) {
+        final transaction = transactions[index];
+        return _buildTransactionItem(transaction, walletProvider);
+      },
+    );
+  }
+
+                                            Column(
+                                              children: [
+                                                if (_model.choiceChipsWalletValue ==
+                                                    'Account')
+                                                  Padding(
+                                                    padding: EdgeInsetsDirectional
+                                                        .fromSTEB(
+                                                            0.0, 4.0, 0.0, 0.0),
+                                                    child: Container(
+                                                      width: 500.0,
+                                                      height: 600.0,
+                                                      constraints: BoxConstraints(maxWidth: 570.0),
+                                                      decoration: BoxDecoration(
+                                                        color: FlutterFlowTheme.of(context).alternate,
+                                                        borderRadius: BorderRadius.circular(8.0),
                                                       ),
-                                                    )
-                                                  ],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          12.0),
-                                                ),
-                                                child: Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          8.0, 0.0, 8.0, 12.0),
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Padding(
-                                                        padding: EdgeInsets.all(
-                                                            12.0),
-                                                        child: Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
+                                                      child: Padding(
+                                                        padding: EdgeInsets.all(12.0),
+                                                        child: Container(padding: EdgeInsets.all(24.0), child: Center(child: Text('Wallet Coming Soon', style: TextStyle(fontSize: 18.0)))) {
+                                                              return _buildSeedPhraseBackup(walletProvider);
+                                                            }
+                                                            // Show wallet management UI if wallet is set up
+                                                            else {
+                                                              return _buildWalletManagement(walletProvider);
+                                                            }
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (_model.choiceChipsWalletValue == 'NFT')
+                                                  Padding(
+                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+                                                    child: Container(
+                                                      width: 500.0,
+                                                      height: 600.0,
+                                                      constraints: BoxConstraints(maxWidth: 570.0),
+                                                      decoration: BoxDecoration(
+                                                        color: FlutterFlowTheme.of(context).alternate,
+                                                        borderRadius: BorderRadius.circular(8.0),
+                                                      ),
+                                                      child: Padding(
+                                                        padding: EdgeInsets.all(12.0),
+                                                        child: Column(
+                                                          mainAxisSize: MainAxisSize.max,
                                                           children: [
-                                                            Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                  FFLocalizations.of(
-                                                                          context)
-                                                                      .getText(
-                                                                    'y15ubtt5' /* Other P2P Transaction Method(s... */,
-                                                                  ),
-                                                                  textAlign:
-                                                                      TextAlign
-                                                                          .end,
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .headlineSmall
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .montserrat(
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .headlineSmall
-                                                                              .fontStyle,
+                                                            Padding(
+                                                              padding: EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 12.0),
+                                                              child: Row(
+                                                                mainAxisSize: MainAxisSize.max,
+                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                children: [
+                                                                  Column(
+                                                                    mainAxisSize: MainAxisSize.max,
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(
+                                                                        FFLocalizations.of(context).getText(
+                                                                          '5en137ce' /* Transaction history */,
                                                                         ),
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondaryText,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .headlineSmall
-                                                                            .fontStyle,
+                                                                        textAlign: TextAlign.end,
+                                                                        style: FlutterFlowTheme.of(context).headlineSmall.override(
+                                                                          font: GoogleFonts.montserrat(
+                                                                            fontWeight: FontWeight.w600,
+                                                                            fontStyle: FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                                                                          ),
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                          fontSize: 20.0,
+                                                                          letterSpacing: 0.0,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context).headlineSmall.fontStyle,
+                                                                        ),
                                                                       ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  height: 4.0)),
-                                                            ),
-                                                            FlutterFlowIconButton(
-                                                              borderColor: Colors
-                                                                  .transparent,
-                                                              borderRadius:
-                                                                  100.0,
-                                                              buttonSize: 30.0,
-                                                              fillColor:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondary,
-                                                              icon: Icon(
-                                                                Icons.add,
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .info,
-                                                                size: 14.0,
+                                                                      Text(
+                                                                        FFLocalizations.of(context).getText(
+                                                                          '5en137ce1' /* Recent activities */,
+                                                                        ),
+                                                                        style: FlutterFlowTheme.of(context).bodySmall.override(
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                        ),
+                                                                      ),
+                                                                    ].divide(SizedBox(height: 4.0)),
+                                                                  ),
+                                                                  FlutterFlowIconButton(
+                                                                    borderColor: Colors.transparent,
+                                                                    borderRadius: 100.0,
+                                                                    buttonSize: 30.0,
+                                                                    fillColor: FlutterFlowTheme.of(context).secondary,
+                                                                    icon: Icon(
+                                                                      Icons.add,
+                                                                      color: FlutterFlowTheme.of(context).info,
+                                                                      size: 14.0,
+                                                                    ),
+                                                                    onPressed: () {
+                                                                      print('IconButton pressed ...');
+                                                                    },
+                                                                  ),
+                                                                ].divide(SizedBox(width: 8.0)),
                                                               ),
-                                                              onPressed:
-                                                                  () async {
-                                                                context.pushNamed(
-                                                                    MethodWalletWidget
-                                                                        .routeName);
+                                                            ),
+                                                            StreamBuilder<List<TransactionModel>>(
+                                                              stream: walletService.getTransactionsStream(),
+                                                              builder: (context, snapshot) {
+                                                                if (!snapshot.hasData) {
+                                                                  return Center(
+                                                                    child: SizedBox(
+                                                                      width: 50.0,
+                                                                      height: 50.0,
+                                                                      child: CircularProgressIndicator(
+                                                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                                                          FlutterFlowTheme.of(context).primary,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                                final transactions = snapshot.data!;
+                                                                if (transactions.isEmpty) {
+                                                                  return Center(
+                                                                    child: Column(
+                                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                                      children: [
+                                                                        Icon(
+                                                                          Icons.history,
+                                                                          size: 48.0,
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                        ),
+                                                                        SizedBox(height: 16.0),
+                                                                        Text(
+                                                                          'No transactions yet',
+                                                                          style: FlutterFlowTheme.of(context).bodyMedium,
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  );
+                                                                }
+                                                                return ListView.separated(
+                                                                  padding: EdgeInsets.fromLTRB(0, 12.0, 0, 12.0),
+                                                                  shrinkWrap: true,
+                                                                  scrollDirection: Axis.vertical,
+                                                                  itemCount: transactions.length,
+                                                                  separatorBuilder: (_, __) => SizedBox(height: 8.0),
+                                                                  itemBuilder: (context, index) {
+                                                                    final transaction = transactions[index];
+                                                                    return _buildTransactionItem(transaction, context);
+                                                                  },
+                                                                );
                                                               },
                                                             ),
-                                                          ].divide(SizedBox(
-                                                              width: 8.0)),
+                                                          ],
                                                         ),
                                                       ),
-                                                      StreamBuilder<
-                                                          List<
-                                                              WalletMethodsRecord>>(
-                                                        stream:
-                                                            queryWalletMethodsRecord(
-                                                          queryBuilder:
-                                                              (walletMethodsRecord) =>
-                                                                  walletMethodsRecord
-                                                                      .where(
-                                                            'method_poster',
-                                                            isEqualTo:
-                                                                currentUserReference,
-                                                          ),
-                                                        ),
-                                                        builder: (context,
-                                                            snapshot) {
-                                                          // Customize what your widget looks like when it's loading.
-                                                          if (!snapshot
-                                                              .hasData) {
-                                                            return Center(
-                                                              child: SizedBox(
-                                                                width: 50.0,
-                                                                height: 50.0,
-                                                                child:
-                                                                    CircularProgressIndicator(
-                                                                  valueColor:
-                                                                      AlwaysStoppedAnimation<
-                                                                          Color>(
-                                                                    FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          }
-                                                          List<WalletMethodsRecord>
-                                                              listViewWalletMethodsRecordList =
-                                                              snapshot.data!;
-                                                          if (listViewWalletMethodsRecordList
-                                                              .isEmpty) {
-                                                            return Image.asset(
-                                                              '',
-                                                            );
-                                                          }
+                                                    ),
+                                                  ),
+                                              ],
+                                            )
 
-                                                          return ListView
-                                                              .separated(
-                                                            padding:
-                                                                EdgeInsets.zero,
-                                                            primary: false,
-                                                            shrinkWrap: true,
-                                                            scrollDirection:
-                                                                Axis.vertical,
-                                                            itemCount:
-                                                                listViewWalletMethodsRecordList
-                                                                    .length,
-                                                            separatorBuilder:
-                                                                (_, __) =>
-                                                                    SizedBox(
-                                                                        height:
-                                                                            8.0),
-                                                            itemBuilder: (context,
-                                                                listViewIndex) {
-                                                              final listViewWalletMethodsRecord =
-                                                                  listViewWalletMethodsRecordList[
-                                                                      listViewIndex];
-                                                              return Container(
-                                                                width: double
-                                                                    .infinity,
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              12.0),
-                                                                  border: Border
-                                                                      .all(
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryBackground,
-                                                                    width: 2.0,
-                                                                  ),
-                                                                ),
-                                                                child: Padding(
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          16.0,
-                                                                          8.0,
-                                                                          8.0,
-                                                                          8.0),
-                                                                  child: Row(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .spaceBetween,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
+                                                if (_model.choiceChipsWalletValue == 'NFT')
+                                                  Padding(
+                                                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 4.0, 0.0, 0.0),
+                                                    child: Container(
+                                                      width: 500.0,
+                                                      height: 600.0,
+                                                      constraints: BoxConstraints(maxWidth: 570.0),
+                                                      decoration: BoxDecoration(
+                                                        color: FlutterFlowTheme.of(context).alternate,
+                                                        borderRadius: BorderRadius.circular(8.0),
+                                                      ),
+                                                      child: Padding(
+                                                        padding: EdgeInsets.all(12.0),
+                                                        child: Column(
+                                                          mainAxisSize: MainAxisSize.max,
+                                                          children: [
+                                                            Padding(
+                                                              padding: EdgeInsetsDirectional.fromSTEB(8.0, 4.0, 8.0, 12.0),
+                                                              child: Row(
+                                                                mainAxisSize: MainAxisSize.max,
+                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                children: [
+                                                                  Column(
+                                                                    mainAxisSize: MainAxisSize.max,
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
                                                                     children: [
-                                                                      Expanded(
-                                                                        child:
-                                                                            Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              12.0,
-                                                                              0.0,
-                                                                              0.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Column(
-                                                                            mainAxisSize:
-                                                                                MainAxisSize.max,
-                                                                            mainAxisAlignment:
-                                                                                MainAxisAlignment.center,
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.start,
-                                                                            children: [
-                                                                              Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 8.0),
-                                                                                child: Text(
-                                                                                  listViewWalletMethodsRecord.methodName,
-                                                                                  style: FlutterFlowTheme.of(context).titleSmall.override(
-                                                                                        font: GoogleFonts.inter(
-                                                                                          fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                        ),
-                                                                                        color: FlutterFlowTheme.of(context).primaryText,
-                                                                                        letterSpacing: 0.0,
-                                                                                        fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                      ),
-                                                                                ),
-                                                                              ),
-                                                                              Text(
-                                                                                listViewWalletMethodsRecord.methodType,
-                                                                                style: FlutterFlowTheme.of(context).bodySmall.override(
-                                                                                      font: GoogleFonts.inter(
-                                                                                        fontWeight: FontWeight.w500,
-                                                                                        fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
-                                                                                      ),
-                                                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.w500,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).bodySmall.fontStyle,
-                                                                                    ),
-                                                                              ),
-                                                                              Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
-                                                                                child: RichText(
-                                                                                  textScaler: MediaQuery.of(context).textScaler,
-                                                                                  text: TextSpan(
-                                                                                    children: [
-                                                                                      TextSpan(
-                                                                                        text: FFLocalizations.of(context).getText(
-                                                                                          '3i3onmpd' /* # I.D. :  */,
-                                                                                        ),
-                                                                                        style: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                              font: GoogleFonts.inter(
-                                                                                                fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                      TextSpan(
-                                                                                        text: listViewWalletMethodsRecord.methodId,
-                                                                                        style: TextStyle(),
-                                                                                      )
-                                                                                    ],
-                                                                                    style: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                          font: GoogleFonts.inter(
-                                                                                            fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                          ),
-                                                                                          letterSpacing: 0.0,
-                                                                                          fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                              Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(0.0, 8.0, 0.0, 0.0),
-                                                                                child: RichText(
-                                                                                  textScaler: MediaQuery.of(context).textScaler,
-                                                                                  text: TextSpan(
-                                                                                    children: [
-                                                                                      TextSpan(
-                                                                                        text: FFLocalizations.of(context).getText(
-                                                                                          'gn9oxkhn' /* # Account :  */,
-                                                                                        ),
-                                                                                        style: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                              font: GoogleFonts.inter(
-                                                                                                fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                              ),
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                            ),
-                                                                                      ),
-                                                                                      TextSpan(
-                                                                                        text: listViewWalletMethodsRecord.methodAccount,
-                                                                                        style: TextStyle(),
-                                                                                      )
-                                                                                    ],
-                                                                                    style: FlutterFlowTheme.of(context).labelMedium.override(
-                                                                                          font: GoogleFonts.inter(
-                                                                                            fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                          ),
-                                                                                          letterSpacing: 0.0,
-                                                                                          fontWeight: FlutterFlowTheme.of(context).labelMedium.fontWeight,
-                                                                                          fontStyle: FlutterFlowTheme.of(context).labelMedium.fontStyle,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ],
+                                                                      Text(
+                                                                        FFLocalizations.of(context).getText(
+                                                                          '5en137ce' /* Transaction history */,
+                                                                        ),
+                                                                        textAlign: TextAlign.end,
+                                                                        style: FlutterFlowTheme.of(context).headlineSmall.override(
+                                                                          font: GoogleFonts.montserrat(
+                                                                            fontWeight: FontWeight.w600,
+                                                                            fontStyle: FlutterFlowTheme.of(context).headlineSmall.fontStyle,
                                                                           ),
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                          fontSize: 20.0,
+                                                                          letterSpacing: 0.0,
+                                                                          fontWeight: FontWeight.w600,
+                                                                          fontStyle: FlutterFlowTheme.of(context).headlineSmall.fontStyle,
                                                                         ),
                                                                       ),
-                                                                    ],
+                                                                      Text(
+                                                                        FFLocalizations.of(context).getText(
+                                                                          '5en137ce1' /* Recent activities */,
+                                                                        ),
+                                                                        style: FlutterFlowTheme.of(context).bodySmall.override(
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                        ),
+                                                                      ),
+                                                                    ].divide(SizedBox(height: 4.0)),
                                                                   ),
-                                                                ),
-                                                              );
-                                                            },
-                                                          );
-                                                        },
-                                                      ),
-                                                    ].divide(
-                                                        SizedBox(height: 8.0)),
-                                                  ),
-                                                ),
-                                              ),
-                                            if (_model.choiceChipsWalletValue ==
-                                                'Account')
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        0.0, 4.0, 0.0, 0.0),
-                                                child: Container(
-                                                  width: 100.0,
-                                                  height: 600.0,
-                                                  decoration: BoxDecoration(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryBackground,
-                                                  ),
-                                                  child: Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .stretch,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsets.all(4.0),
-                                                        child: FutureBuilder<
-                                                            ApiCallResponse>(
-                                                          future:
-                                                              BalanceCall.call(),
-                                                          builder: (context,
-                                                              snapshot) {
-                                                            // Customize what your widget looks like when it's loading.
-                                                            if (!snapshot
-                                                                .hasData) {
-                                                              return Center(
-                                                                child: SizedBox(
-                                                                  width: 50.0,
-                                                                  height: 50.0,
-                                                                  child:
-                                                                      CircularProgressIndicator(
-                                                                    valueColor:
-                                                                        AlwaysStoppedAnimation<
-                                                                            Color>(
-                                                                      FlutterFlowTheme.of(
-                                                                              context)
-                                                                          .primary,
+                                                                  FlutterFlowIconButton(
+                                                                    borderColor: Colors.transparent,
+                                                                    borderRadius: 100.0,
+                                                                    buttonSize: 30.0,
+                                                                    fillColor: FlutterFlowTheme.of(context).secondary,
+                                                                    icon: Icon(
+                                                                      Icons.add,
+                                                                      color: FlutterFlowTheme.of(context).info,
+                                                                      size: 14.0,
                                                                     ),
+                                                                    onPressed: () {
+                                                                      print('IconButton pressed ...');
+                                                                    },
                                                                   ),
-                                                                ),
-                                                              );
-                                                            }
-                                                            final creditCardBalanceResponse =
-                                                                snapshot.data!;
-                                                            return Container(
-                                                              width: 370.0,
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    blurRadius:
-                                                                        6.0,
-                                                                    color: Color(
-                                                                        0x4B1A1F24),
-                                                                    offset:
-                                                                        Offset(
-                                                                      0.0,
-                                                                      2.0,
-                                                                    ),
-                                                                  )
-                                                                ],
-                                                                gradient:
-                                                                    LinearGradient(
-                                                                  colors: [
-                                                                    FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondary,
-                                                                    FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryText
-                                                                  ],
-                                                                  stops: [
-                                                                    0.0,
-                                                                    1.0
-                                                                  ],
-                                                                  begin:
-                                                                      AlignmentDirectional(
-                                                                          0.94,
-                                                                          -1.0),
-                                                                  end:
-                                                                      AlignmentDirectional(
-                                                                          -0.94,
-                                                                          1.0),
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8.0),
+                                                                ].divide(SizedBox(width: 8.0)),
                                                               ),
-                                                              child: Column(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .max,
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Padding(
-                                                                    padding:
-                                                                        EdgeInsets.all(
-                                                                            12.0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .center,
+                                                            ),
+                                                            StreamBuilder<List<TransactionModel>>(
+                                                              stream: walletService.getTransactionsStream(),
+                                                              builder: (context, snapshot) {
+                                                                if (!snapshot.hasData) {
+                                                                  return Center(
+                                                                    child: SizedBox(
+                                                                      width: 50.0,
+                                                                      height: 50.0,
+                                                                      child: CircularProgressIndicator(
+                                                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                                                          FlutterFlowTheme.of(context).primary,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }
+                                                                final transactions = snapshot.data!;
+                                                                if (transactions.isEmpty) {
+                                                                  return Center(
+                                                                    child: Column(
+                                                                      mainAxisAlignment: MainAxisAlignment.center,
                                                                       children: [
-                                                                        if (FFAppState().isWalletConnected ==
-                                                                            false)
-                                                                          FFButtonWidget(
-                                                                            onPressed:
-                                                                                () async {
-                                                                              FFAppState().isWalletConnected = true;
-                                                                            },
-                                                                            text:
-                                                                                FFLocalizations.of(context).getText(
-                                                                              'q0vr7c4a' /* Connect Wallet */,
-                                                                            ),
-                                                                            icon:
-                                                                                Icon(
-                                                                              Icons.account_balance_wallet,
-                                                                              size: 15.0,
-                                                                            ),
-                                                                            options:
-                                                                                FFButtonOptions(
-                                                                              height: 36.0,
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 0.0),
-                                                                              iconAlignment: IconAlignment.end,
-                                                                              iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                                                              iconColor: FlutterFlowTheme.of(context).secondaryText,
-                                                                              color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                                                                                    font: GoogleFonts.inter(
-                                                                                      fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                                                                                      fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                    ),
-                                                                                    color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                    fontSize: 12.0,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
-                                                                                    fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
-                                                                                  ),
-                                                                              elevation: 0.0,
-                                                                              borderRadius: BorderRadius.circular(8.0),
-                                                                            ),
-                                                                          ),
+                                                                        Icon(
+                                                                          Icons.history,
+                                                                          size: 48.0,
+                                                                          color: FlutterFlowTheme.of(context).secondaryText,
+                                                                        ),
+                                                                        SizedBox(height: 16.0),
+                                                                        Text(
+                                                                          'No transactions yet',
+                                                                          style: FlutterFlowTheme.of(context).bodyMedium,
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  );
+                                                                }
+                                                                return ListView.separated(
+                                                                  padding: EdgeInsets.fromLTRB(0, 12.0, 0, 12.0),
+                                                                  shrinkWrap: true,
+                                                                  scrollDirection: Axis.vertical,
+                                                                  itemCount: transactions.length,
+                                                                  separatorBuilder: (_, __) => SizedBox(height: 8.0),
+                                                                  itemBuilder: (context, index) {
+                                                                    final transaction = transactions[index];
+                                                                    return _buildTransactionItem(transaction, context);
+                                                                  },
+                                                                );
+                                                              },
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
                                                                         Padding(
                                                                           padding: EdgeInsetsDirectional.fromSTEB(
                                                                               12.0,
@@ -9397,3 +9935,4 @@ class _UserpageWidgetState extends State<UserpageWidget>
     );
   }
 }
+

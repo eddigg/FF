@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"atlas-blockchain/pkg/transaction"
-	"atlas-blockchain/pkg/wallet"
-	"atlas-blockchain/pkg/config"
+	"atlas-blockchain/core/pkg/transaction"
+	"atlas-blockchain/core/pkg/wallet"
+	"atlas-blockchain/core/pkg/config"
 )
 
 // TransactionPriority represents a transaction with its priority score

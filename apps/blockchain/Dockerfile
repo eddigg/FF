@@ -1,6 +1,9 @@
 # Use the official Go image.
 # This will be our builder.
-FROM mirror.gcr.io/library/golang:1.19-alpine AS builder
+FROM mirror.gcr.io/library/golang:1.24-alpine AS builder
+
+# Install build tools
+RUN apk --no-cache add gcc musl-dev
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -9,18 +12,16 @@ WORKDIR /app
 COPY . .
 
 # We want to populate the module cache based on the go.mod file.
-COPY go.mod go.sum ./api/
-WORKDIR /app/api
 RUN go mod download
 
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/app .
+RUN go build -o /go/bin/app .
 
 # Start a new stage from scratch for a smaller image
 FROM mirror.gcr.io/library/alpine:latest
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates sqlite
 
 WORKDIR /root/
 

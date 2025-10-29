@@ -6,8 +6,8 @@ import (
 	"log"
 	"sync"
 	"time"
-	_ "github.com/mattn/go-sqlite3"
-	"atlas-blockchain/pkg/database"
+	_ "modernc.org/sqlite"
+	"atlas-blockchain/core/pkg/database"
 )
 
 // OptimizedDatabase provides enhanced SQLite functionality with WAL mode and connection pooling

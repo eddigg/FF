@@ -1,0 +1,7 @@
+build/
+.dart_tool/
+*.log
+firebase/functions/node_modules/
+node_modules/
+android/
+ios/
